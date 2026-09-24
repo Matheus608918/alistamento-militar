@@ -1,0 +1,45 @@
+.cartao {
+  background: var(--cor-superficie);
+  border-radius: var(--raio-md);
+  box-shadow: var(--sombra-sm);
+  padding: var(--esp-4);
+  transition: box-shadow var(--transicao);
+}
+
+.clicavel {
+  cursor: pointer;
+}
+
+.clicavel:hover {
+  box-shadow: var(--sombra-md);
+}
+
+.cartao-topo h3 {
+  margin: 0;
+}
+
+.subtitulo {
+  margin: var(--esp-1) 0 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.cartao-corpo {
+  margin-top: var(--esp-3);
+}
+
+.cartao-rodape:empty {
+  display: none;
+}
+
+.cartao-rodape {
+  margin-top: var(--esp-4);
+  display: flex;
+  gap: var(--esp-2);
+  flex-wrap: wrap;
+}
+
+.destaque-primaria { border-left: 4px solid var(--cor-primaria); }
+.destaque-sucesso  { border-left: 4px solid var(--cor-sucesso); }
+.destaque-perigo   { border-left: 4px solid var(--cor-perigo); }
+.destaque-alerta   { border-left: 4px solid var(--cor-alerta); }

@@ -1,0 +1,33 @@
+.selo {
+  display: inline-block;
+  padding: var(--esp-1) var(--esp-3);
+  border-radius: var(--raio-full);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-forte);
+  white-space: nowrap;
+}
+
+.tom-sucesso {
+  background: var(--cor-sucesso-suave);
+  color: #1B5E20;
+}
+
+.tom-perigo {
+  background: var(--cor-perigo-suave);
+  color: #8B1A1A;
+}
+
+.tom-alerta {
+  background: var(--cor-alerta-suave);
+  color: var(--cor-alerta-texto);
+}
+
+.tom-info {
+  background: #E3F2FD;
+  color: #0D47A1;
+}
+
+.tom-neutro {
+  background: var(--cor-borda-suave);
+  color: var(--cor-texto-suave);
+}

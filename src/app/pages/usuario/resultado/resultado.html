@@ -1,0 +1,57 @@
+<h1>Resultado do Alistamento</h1>
+
+<div
+    class="status"
+    [ngClass]="{
+        'aprovado': situacao === 'Aprovado',
+        'reprovado': situacao === 'Reprovado',
+        'analise': situacao === 'Em análise' || situacao === 'Avaliação Médica Agendada'
+    }">
+
+    <h2>{{ situacao.toUpperCase() }}</h2>
+
+</div>
+
+<p>
+
+    Olá, <strong>{{ nomeUsuario }}</strong>.
+
+    <br>
+
+    Acompanhe abaixo a situação atual do seu processo de alistamento.
+
+</p>
+
+<div class="informacoes">
+
+    <div class="info">
+
+        <h3>Data do Cadastro</h3>
+
+        <span>{{ dataCadastro }}</span>
+
+    </div>
+
+    <div class="info">
+
+        <h3>Situação</h3>
+
+        <span>{{ situacao }}</span>
+
+    </div>
+
+    <div class="info">
+
+        <h3>Próxima Etapa</h3>
+
+        <span>{{ proximaEtapa }}</span>
+
+    </div>
+
+</div>
+
+<button (click)="voltarDashboard()">
+
+    Voltar ao Dashboard
+
+</button>

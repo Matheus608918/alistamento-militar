@@ -1,0 +1,100 @@
+<div class="agendamento-container">
+
+    <h1>Agendamento da Avaliação Médica</h1>
+
+    <ng-container *ngIf="agendamento; else semAgendamento">
+
+        <p>
+            Confira abaixo as informações da sua avaliação médica.
+        </p>
+
+        <div class="info">
+
+            <label>Data</label>
+
+            <input
+                type="text"
+                [value]="agendamento.data"
+                readonly>
+
+        </div>
+
+        <div class="info">
+
+            <label>Horário</label>
+
+            <input
+                type="text"
+                [value]="agendamento.horario"
+                readonly>
+
+        </div>
+
+        <div class="info">
+
+            <label>Local</label>
+
+            <input
+                type="text"
+                [value]="agendamento.local"
+                readonly>
+
+        </div>
+
+        <div class="info">
+
+            <label>Médico Responsável</label>
+
+            <input
+                type="text"
+                [value]="agendamento.medico"
+                readonly>
+
+        </div>
+
+        <div class="info">
+
+            <label>Status</label>
+
+            <input
+                type="text"
+                [value]="agendamento.status"
+                readonly>
+
+        </div>
+
+        <button
+            *ngIf="!confirmado"
+            (click)="confirmarPresenca()">
+
+            Confirmar Presença
+
+        </button>
+
+        <button
+            *ngIf="confirmado"
+            disabled>
+
+            Presença Confirmada
+
+        </button>
+
+    </ng-container>
+
+    <ng-template #semAgendamento>
+
+        <div class="sem-agendamento">
+
+            <h2>Nenhuma avaliação agendada</h2>
+
+            <p>
+
+                Aguarde a Junta Militar realizar o agendamento da sua avaliação médica.
+
+            </p>
+
+        </div>
+
+    </ng-template>
+
+</div>

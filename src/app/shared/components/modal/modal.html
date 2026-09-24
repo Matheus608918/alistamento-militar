@@ -1,0 +1,40 @@
+<div
+    class="overlay"
+    *ngIf="aberto"
+    (click)="aoClicarFora()">
+
+    <div
+        class="painel"
+        [ngClass]="'largura-' + largura"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="titulo"
+        (click)="$event.stopPropagation()">
+
+        <header class="painel-topo">
+
+            <h2 tabindex="-1">{{ titulo }}</h2>
+
+            <button
+                type="button"
+                class="fechar"
+                aria-label="Fechar janela"
+                (click)="fechar.emit()">
+
+                <span aria-hidden="true">&times;</span>
+
+            </button>
+
+        </header>
+
+        <div class="painel-corpo">
+            <ng-content></ng-content>
+        </div>
+
+        <footer class="painel-rodape">
+            <ng-content select="[rodape]"></ng-content>
+        </footer>
+
+    </div>
+
+</div>

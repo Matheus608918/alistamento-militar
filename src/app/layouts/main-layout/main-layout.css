@@ -1,0 +1,29 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  background: var(--cor-fundo);
+}
+
+.content:focus {
+  outline: none;
+}
+
+@media (max-width: 768px) {
+
+  .container {
+    flex-direction: column;
+  }
+
+}

@@ -1,0 +1,38 @@
+<nav
+    class="sidebar"
+    aria-label="Navegação principal">
+
+    <h2 class="titulo">Alistamento</h2>
+
+    <ul class="menu">
+
+        <li *ngFor="let item of itens()">
+
+            <a
+                [routerLink]="item.rota"
+                routerLinkActive="ativo"
+                [routerLinkActiveOptions]="{ exact: true }"
+                ariaCurrentWhenActive="page">
+
+                {{ item.texto }}
+
+            </a>
+
+        </li>
+
+    </ul>
+
+    <div class="rodape">
+
+        <button
+            type="button"
+            class="sair"
+            (click)="sair()">
+
+            Sair
+
+        </button>
+
+    </div>
+
+</nav>

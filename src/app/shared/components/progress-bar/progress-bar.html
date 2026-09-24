@@ -1,0 +1,27 @@
+<div class="progresso-wrapper">
+
+    <div
+        class="trilho"
+        role="progressbar"
+        [attr.aria-label]="rotulo"
+        [attr.aria-valuenow]="etapaAtual"
+        [attr.aria-valuemin]="0"
+        [attr.aria-valuemax]="totalEtapas"
+        [attr.aria-valuetext]="'Etapa ' + etapaAtual + ' de ' + totalEtapas">
+
+        <div
+            class="preenchimento"
+            [style.width.%]="percentual"></div>
+
+    </div>
+
+    <p
+        class="texto"
+        *ngIf="mostrarTexto">
+
+        Etapa {{ etapaAtual }} de {{ totalEtapas }}
+        ({{ percentual }}%)
+
+    </p>
+
+</div>

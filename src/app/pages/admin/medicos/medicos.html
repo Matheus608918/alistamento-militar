@@ -1,0 +1,148 @@
+<h1>Gerenciamento de Médicos</h1>
+
+<p>
+    Cadastre, edite e remova médicos do sistema.
+</p>
+
+<div class="formulario">
+
+    <div class="campo">
+
+        <label>Nome</label>
+
+        <input
+            type="text"
+            [(ngModel)]="medico.nome">
+
+    </div>
+
+    <div class="campo">
+
+        <label>E-mail</label>
+
+        <input
+            type="email"
+            [(ngModel)]="medico.email">
+
+    </div>
+
+    <div class="campo">
+
+        <label>Senha</label>
+
+        <input
+            type="password"
+            [(ngModel)]="medico.senha">
+
+    </div>
+
+    <div class="campo">
+
+        <label>CRM</label>
+
+        <input
+            type="text"
+            [(ngModel)]="medico.crm">
+
+    </div>
+
+    <div class="campo">
+
+        <label>Especialidade</label>
+
+        <input
+            type="text"
+            [(ngModel)]="medico.especialidade">
+
+    </div>
+
+    <div class="campo">
+
+        <label>Telefone</label>
+
+        <input
+            type="text"
+            [(ngModel)]="medico.telefone">
+
+    </div>
+
+    <button (click)="salvar()">
+
+        {{ editando ? 'Atualizar Médico' : 'Cadastrar Médico' }}
+
+    </button>
+
+</div>
+
+<div class="tabela">
+
+    <h2>Médicos Cadastrados</h2>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>CRM</th>
+                <th>Especialidade</th>
+                <th>Telefone</th>
+                <th>Ações</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr *ngIf="medicos.length === 0">
+
+                <td colspan="6" style="text-align:center">
+
+                    Nenhum médico cadastrado.
+
+                </td>
+
+            </tr>
+
+            <tr *ngFor="let medico of medicos; let i = index">
+
+                <td>{{ medico.nome }}</td>
+
+                <td>{{ medico.email }}</td>
+
+                <td>{{ medico.crm }}</td>
+
+                <td>{{ medico.especialidade }}</td>
+
+                <td>{{ medico.telefone }}</td>
+
+                <td>
+
+                    <button
+                        class="btn-editar"
+                        (click)="editar(i)">
+
+                        Editar
+
+                    </button>
+
+                    <button
+                        class="btn-excluir"
+                        (click)="excluir(i)">
+
+                        Excluir
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>

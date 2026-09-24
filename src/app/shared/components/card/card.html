@@ -1,0 +1,32 @@
+<section
+    class="cartao"
+    [ngClass]="[
+        destaque ? 'destaque-' + destaque : '',
+        clicavel ? 'clicavel' : ''
+    ]">
+
+    <header
+        class="cartao-topo"
+        *ngIf="titulo || subtitulo">
+
+        <h3 *ngIf="titulo">{{ titulo }}</h3>
+
+        <p
+            class="subtitulo"
+            *ngIf="subtitulo">
+
+            {{ subtitulo }}
+
+        </p>
+
+    </header>
+
+    <div class="cartao-corpo">
+        <ng-content></ng-content>
+    </div>
+
+    <footer class="cartao-rodape">
+        <ng-content select="[rodape]"></ng-content>
+    </footer>
+
+</section>

@@ -1,0 +1,143 @@
+<div class="cadastro-container">
+
+  <div class="cadastro-card">
+
+    <div class="topo">
+      <h1>Cadastro Complementar</h1>
+      <p>Etapa 2 de 2</p>
+
+      <div class="progress">
+        <div class="progress-bar"></div>
+      </div>
+    </div>
+
+    <form [formGroup]="cadastroForm" (ngSubmit)="salvar()">
+
+      <section class="secao">
+
+        <h2>Dados Pessoais</h2>
+
+        <div class="grid">
+
+          <div class="form-group">
+            <label>Nome Completo</label>
+            <input type="text" formControlName="nome">
+          </div>
+
+          <div class="form-group">
+            <label>Nome da Mãe</label>
+            <input type="text" formControlName="nomeMae">
+          </div>
+
+          <div class="form-group">
+            <label>Nome do Pai</label>
+            <input type="text" formControlName="nomePai">
+          </div>
+
+          <div class="form-group">
+            <label>CPF</label>
+            <input type="text" formControlName="cpf">
+          </div>
+
+          <div class="form-group">
+            <label>RG</label>
+            <input type="text" formControlName="rg">
+          </div>
+
+          <div class="form-group">
+            <label>Data de Nascimento</label>
+            <input type="date" formControlName="dataNascimento">
+          </div>
+
+          <div class="form-group">
+            <label>Telefone</label>
+            <input type="text" formControlName="telefone">
+          </div>
+
+          <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" formControlName="email">
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="secao">
+
+        <h2>Endereço</h2>
+
+        <div class="grid">
+
+          <div class="form-group">
+            <label>CEP</label>
+            <input type="text" formControlName="cep">
+          </div>
+
+          <div class="form-group">
+            <label>Logradouro</label>
+            <input type="text" formControlName="logradouro">
+          </div>
+
+          <div class="form-group">
+            <label>Número</label>
+            <input type="text" formControlName="numero">
+          </div>
+
+          <div class="form-group">
+            <label>Bairro</label>
+            <input type="text" formControlName="bairro">
+          </div>
+
+          <div class="form-group">
+            <label>Município</label>
+            <input type="text" formControlName="municipio">
+          </div>
+
+          <div class="form-group">
+            <label>UF</label>
+            <input type="text" formControlName="uf">
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="secao">
+
+        <h2>Informações Gerais</h2>
+
+        <div class="grid">
+
+          <div class="form-group">
+            <label>País</label>
+            <input type="text" formControlName="pais">
+          </div>
+
+          <div class="form-group">
+            <label>Zona Residencial</label>
+            <input type="text" formControlName="zonaResidencial">
+          </div>
+
+        </div>
+
+        <div class="checkbox-group">
+
+          <label>
+            <input type="checkbox" formControlName="voluntario">
+            Desejo me voluntariar para o Serviço Militar.
+          </label>
+
+        </div>
+
+      </section>
+
+      <button type="submit">
+        Finalizar Cadastro
+      </button>
+
+    </form>
+
+  </div>
+
+</div>

@@ -1,0 +1,19 @@
+<header class="navbar">
+
+    <a class="pular-conteudo" href="#conteudo-principal">
+        Pular para o conteúdo
+    </a>
+
+    <p class="logo">Sistema de Alistamento Militar</p>
+
+    <div class="usuario" *ngIf="usuario()">
+
+        <span class="nome">{{ nome() }}</span>
+
+        <span class="perfil" *ngIf="perfilLegivel()">
+            {{ perfilLegivel() }}
+        </span>
+
+    </div>
+
+</header>

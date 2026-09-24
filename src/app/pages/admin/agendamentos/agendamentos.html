@@ -1,0 +1,88 @@
+<h1>Gerenciamento de Agendamentos</h1>
+
+<p>
+    Visualize e gerencie todos os agendamentos do sistema.
+</p>
+
+<table>
+
+    <thead>
+
+        <tr>
+
+            <th>Cidadão</th>
+            <th>CPF</th>
+            <th>Data</th>
+            <th>Horário</th>
+            <th>Local</th>
+            <th>Médico</th>
+            <th>Status</th>
+            <th>Ações</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <tr *ngIf="agendamentos.length === 0">
+
+            <td colspan="8" style="text-align:center">
+
+                Nenhum agendamento encontrado.
+
+            </td>
+
+        </tr>
+
+        <tr *ngFor="let agendamento of agendamentos">
+
+            <td>{{ agendamento.usuario }}</td>
+
+            <td>{{ agendamento.cpf }}</td>
+
+            <td>{{ agendamento.data }}</td>
+
+            <td>{{ agendamento.horario }}</td>
+
+            <td>{{ agendamento.local }}</td>
+
+            <td>{{ agendamento.medico }}</td>
+
+            <td>{{ agendamento.status }}</td>
+
+            <td>
+
+                <ng-container *ngIf="agendamento.status === 'Agendado'; else finalizado">
+
+                    <button
+                        class="btn-confirmar"
+                        (click)="alterarStatus(agendamento, 'Confirmado')">
+
+                        Confirmar
+
+                    </button>
+
+                    <button
+                        class="btn-cancelar"
+                        (click)="alterarStatus(agendamento, 'Cancelado')">
+
+                        Cancelar
+
+                    </button>
+
+                </ng-container>
+
+                <ng-template #finalizado>
+
+                    <span>Concluído</span>
+
+                </ng-template>
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>

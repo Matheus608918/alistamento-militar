@@ -1,0 +1,53 @@
+<h1>Relatórios</h1>
+
+<p>
+    Resumo geral do sistema.
+</p>
+
+<div class="cards">
+
+    <div class="card">
+        <h3>Cidadãos</h3>
+        <h2>{{ totalUsuarios }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Médicos</h3>
+        <h2>{{ totalMedicos }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Documentos</h3>
+        <h2>{{ totalDocumentos }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Agendamentos</h3>
+        <h2>{{ totalAgendamentos }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Avaliações</h3>
+        <h2>{{ totalAvaliacoes }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Aprovados</h3>
+        <h2>{{ aprovados }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Reprovados</h3>
+        <h2>{{ reprovados }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Em análise</h3>
+        <h2>{{ emAnalise }}</h2>
+    </div>
+
+</div>
+
+<button (click)="exportarRelatorio()">
+    Exportar Relatório
+</button>

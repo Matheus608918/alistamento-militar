@@ -1,0 +1,79 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--esp-4);
+  z-index: 50;
+}
+
+.painel {
+  background: var(--cor-superficie);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-lg);
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.largura-pequena { max-width: 420px; }
+.largura-media   { max-width: 640px; }
+.largura-grande  { max-width: 900px; }
+
+.painel-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  padding: var(--esp-4) var(--esp-5);
+  border-bottom: 1px solid var(--cor-borda-suave);
+}
+
+.painel-topo h2 {
+  margin: 0;
+}
+
+.fechar {
+  background: transparent;
+  border: none;
+  font-size: var(--texto-xl);
+  line-height: 1;
+  color: var(--cor-texto-suave);
+  cursor: pointer;
+  padding: var(--esp-1) var(--esp-2);
+  border-radius: var(--raio-sm);
+}
+
+.fechar:hover {
+  background: var(--cor-superficie-alt);
+  color: var(--cor-texto);
+}
+
+.painel-corpo {
+  padding: var(--esp-5);
+  overflow-y: auto;
+}
+
+.painel-rodape:empty {
+  display: none;
+}
+
+.painel-rodape {
+  display: flex;
+  gap: var(--esp-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: var(--esp-4) var(--esp-5);
+  border-top: 1px solid var(--cor-borda-suave);
+}
+
+@media (max-width: 768px) {
+
+  .painel-corpo {
+    padding: var(--esp-4);
+  }
+
+}

@@ -1,0 +1,239 @@
+<div class="header">
+
+    <div>
+
+        <h1>Painel do Administrador</h1>
+
+        <p>Gerencie o Sistema de Alistamento Militar.</p>
+
+    </div>
+
+</div>
+
+<div class="cards">
+
+    <div class="card">
+
+        <h3>Cidadãos</h3>
+
+        <h2>{{ totalUsuarios }}</h2>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Médicos</h3>
+
+        <h2>{{ totalMedicos }}</h2>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Documentos</h3>
+
+        <h2>{{ totalDocumentos }}</h2>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Agendamentos</h3>
+
+        <h2>{{ totalAgendamentos }}</h2>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Avaliações</h3>
+
+        <h2>{{ totalAvaliacoes }}</h2>
+
+    </div>
+
+    <div class="card aprovado">
+
+        <h3>Aprovados</h3>
+
+        <h2>{{ aprovados }}</h2>
+
+    </div>
+
+    <div class="card reprovado">
+
+        <h3>Reprovados</h3>
+
+        <h2>{{ reprovados }}</h2>
+
+    </div>
+
+    <div class="card analise">
+
+        <h3>Em análise</h3>
+
+        <h2>{{ emAnalise }}</h2>
+
+    </div>
+
+</div>
+
+<div class="tabela">
+
+    <div class="titulo-tabela">
+
+        <h2>Últimos cidadãos cadastrados</h2>
+
+    </div>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Nome</th>
+
+                <th>CPF</th>
+
+                <th>E-mail</th>
+
+                <th>Status</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr *ngIf="ultimosUsuarios.length === 0">
+
+                <td colspan="4">
+
+                    Nenhum cidadão cadastrado.
+
+                </td>
+
+            </tr>
+
+            <tr *ngFor="let usuario of ultimosUsuarios">
+
+                <td>{{ usuario.nome }}</td>
+
+                <td>{{ usuario.cpf }}</td>
+
+                <td>{{ usuario.email }}</td>
+
+                <td>
+
+                    <span
+
+                        class="status"
+
+                        [ngClass]="{
+
+                        'status-aprovado': usuario.status === 'Aprovado',
+
+                        'status-reprovado': usuario.status === 'Reprovado',
+
+                        'status-analise': usuario.status !== 'Aprovado' && usuario.status !== 'Reprovado'
+
+                    }">
+
+                        {{ usuario.status || 'Em análise' }}
+
+                    </span>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="tabela">
+
+    <div class="titulo-tabela">
+
+        <h2>Últimos Agendamentos</h2>
+
+    </div>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Nome</th>
+
+                <th>Data</th>
+
+                <th>Horário</th>
+
+                <th>Local</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr *ngIf="ultimosAgendamentos.length === 0">
+
+                <td colspan="4">
+
+                    Nenhum agendamento encontrado.
+
+                </td>
+
+            </tr>
+
+            <tr *ngFor="let usuario of ultimosAgendamentos">
+
+                <td>{{ usuario.nome }}</td>
+
+                <td>{{ usuario.agendamento.data }}</td>
+
+                <td>{{ usuario.agendamento.horario }}</td>
+
+                <td>{{ usuario.agendamento.local }}</td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="cards">
+
+    <div class="card aprovado">
+
+        <h3>Aprovados</h3>
+
+        <h2>{{ aprovados }}</h2>
+
+    </div>
+
+    <div class="card analise">
+
+        <h3>Em análise</h3>
+
+        <h2>{{ emAnalise }}</h2>
+
+    </div>
+
+    <div class="card reprovado">
+
+        <h3>Reprovados</h3>
+
+        <h2>{{ reprovados }}</h2>
+
+    </div>
+
+</div>

@@ -1,0 +1,85 @@
+<h1>Criar Conta</h1>
+
+<p>Preencha os dados abaixo para iniciar seu alistamento.</p>
+
+<form (ngSubmit)="cadastrar()">
+
+  <div class="form-group">
+    <label>Nome Completo</label>
+    <input
+      type="text"
+      name="nome"
+      [(ngModel)]="usuario.nome"
+      placeholder="Digite seu nome"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>CPF</label>
+    <input
+      type="text"
+      name="cpf"
+      [(ngModel)]="usuario.cpf"
+      placeholder="000.000.000-00"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Data de Nascimento</label>
+    <input
+      type="date"
+      name="dataNascimento"
+      [(ngModel)]="usuario.dataNascimento"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>E-mail</label>
+    <input
+      type="email"
+      name="email"
+      [(ngModel)]="usuario.email"
+      placeholder="email@exemplo.com"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Telefone</label>
+    <input
+      type="tel"
+      name="telefone"
+      [(ngModel)]="usuario.telefone"
+      placeholder="(11) 99999-9999"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Senha</label>
+    <input
+      type="password"
+      name="senha"
+      [(ngModel)]="usuario.senha"
+      placeholder="Digite sua senha"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Confirmar Senha</label>
+    <input
+      type="password"
+      name="confirmarSenha"
+      [(ngModel)]="usuario.confirmarSenha"
+      placeholder="Confirme sua senha"
+      required>
+  </div>
+
+  <button type="submit">
+    Continuar Cadastro
+  </button>
+
+</form>
+
+<span>
+  Já possui uma conta?
+  <a routerLink="/login">Entrar</a>
+</span>

@@ -1,0 +1,85 @@
+<div class="alistamentos-container">
+
+    <h1>Gerenciamento de Alistamentos</h1>
+
+    <p>
+        Visualize todos os alistamentos e altere o status dos candidatos.
+    </p>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>E-mail</th>
+                <th>Status</th>
+                <th>Ações</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr *ngIf="usuarios.length === 0">
+
+                <td colspan="5" style="text-align:center">
+
+                    Nenhum alistamento encontrado.
+
+                </td>
+
+            </tr>
+
+            <tr *ngFor="let usuario of usuarios">
+
+                <td>{{ usuario.nome }}</td>
+
+                <td>{{ usuario.cpf }}</td>
+
+                <td>{{ usuario.email }}</td>
+
+                <td>
+
+                    {{ usuario.status || 'Em análise' }}
+
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn-analise"
+                        (click)="alterarStatus(usuario,'Em análise')">
+
+                        Em análise
+
+                    </button>
+
+                    <button
+                        class="btn-aprovar"
+                        (click)="alterarStatus(usuario,'Aprovado')">
+
+                        Aprovar
+
+                    </button>
+
+                    <button
+                        class="btn-reprovar"
+                        (click)="alterarStatus(usuario,'Reprovado')">
+
+                        Reprovar
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>

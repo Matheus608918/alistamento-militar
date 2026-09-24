@@ -1,0 +1,114 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+h1{
+    color:#2F5233;
+    margin-bottom:10px;
+}
+
+p{
+    color:#666;
+    margin-bottom:30px;
+}
+
+.formulario{
+    background:#fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:30px;
+}
+
+.campo{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:18px;
+}
+
+.campo label{
+    margin-bottom:8px;
+    font-weight:bold;
+    color:#444;
+}
+
+.campo input{
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+button{
+    background:#2F5233;
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.tabela{
+    background:#fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.tabela h2{
+    color:#2F5233;
+    margin-bottom:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#2F5233;
+    color:#fff;
+    padding:14px;
+    text-align:left;
+}
+
+td{
+    padding:14px;
+    border-bottom:1px solid #eee;
+}
+
+tr:hover{
+    background:#f8f8f8;
+}
+
+.btn-editar{
+    background:#ffc107;
+    color:#000;
+    margin-right:10px;
+}
+
+.btn-excluir{
+    background:#dc3545;
+}
+
+@media(max-width:768px){
+
+    .formulario,
+    .tabela{
+        padding:18px;
+    }
+
+    table{
+        display:block;
+        overflow-x:auto;
+    }
+
+}

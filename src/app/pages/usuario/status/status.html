@@ -1,0 +1,115 @@
+<h1>Status do Alistamento</h1>
+
+<p>
+    Acompanhe abaixo todas as etapas do seu processo de alistamento militar.
+</p>
+
+<div class="timeline">
+
+    <div class="etapa concluida">
+
+        <div class="circulo"></div>
+
+        <div class="conteudo">
+
+            <h3>Cadastro</h3>
+
+            <span>{{ cadastro }}</span>
+
+        </div>
+
+    </div>
+
+    <div class="linha"></div>
+
+    <div class="etapa concluida">
+
+        <div class="circulo"></div>
+
+        <div class="conteudo">
+
+            <h3>Cadastro Complementar</h3>
+
+            <span>{{ cadastroComplementar }}</span>
+
+        </div>
+
+    </div>
+
+    <div class="linha"></div>
+
+    <div
+        class="etapa"
+        [class.concluida]="documentos === 'Aprovados'"
+        [class.andamento]="documentos === 'Em análise'">
+
+        <div class="circulo"></div>
+
+        <div class="conteudo">
+
+            <h3>Documentos</h3>
+
+            <span>{{ documentos }}</span>
+
+        </div>
+
+    </div>
+
+    <div class="linha"></div>
+
+    <div
+        class="etapa"
+        [class.concluida]="analise === 'Concluída'"
+        [class.andamento]="analise === 'Em análise'">
+
+        <div class="circulo"></div>
+
+        <div class="conteudo">
+
+            <h3>Análise Militar</h3>
+
+            <span>{{ analise }}</span>
+
+        </div>
+
+    </div>
+
+    <div class="linha"></div>
+
+    <div
+        class="etapa"
+        [class.concluida]="avaliacao === 'Concluída'"
+        [class.andamento]="avaliacao === 'Agendada'">
+
+        <div class="circulo"></div>
+
+        <div class="conteudo">
+
+            <h3>Avaliação Médica</h3>
+
+            <span>{{ avaliacao }}</span>
+
+        </div>
+
+    </div>
+
+    <div class="linha"></div>
+
+    <div
+        class="etapa"
+        [class.concluida]="resultado === 'Aprovado'"
+        [class.andamento]="resultado === 'Pendente'">
+
+        <div class="circulo"></div>
+
+        <div class="conteudo">
+
+            <h3>Resultado Final</h3>
+
+            <span>{{ resultado }}</span>
+
+        </div>
+
+    </div>
+
+</div>

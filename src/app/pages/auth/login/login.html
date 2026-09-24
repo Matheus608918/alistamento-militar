@@ -1,0 +1,81 @@
+<main class="tela-login">
+
+    <div class="cartao-login">
+
+        <header class="topo">
+
+            <h1>Entrar</h1>
+
+            <p>Acesse sua conta para acompanhar seu alistamento.</p>
+
+        </header>
+
+        <form
+            (ngSubmit)="entrar()"
+            novalidate>
+
+            <p
+                class="alerta-erro"
+                *ngIf="erro"
+                role="alert">
+
+                {{ erro }}
+
+            </p>
+
+            <div class="campo">
+
+                <label for="login-email">E-mail</label>
+
+                <input
+                    id="login-email"
+                    type="email"
+                    name="email"
+                    autocomplete="email"
+                    placeholder="email@exemplo.com"
+                    [(ngModel)]="login.email"
+                    [attr.aria-invalid]="erro ? 'true' : null"
+                    required>
+
+            </div>
+
+            <div class="campo">
+
+                <label for="login-senha">Senha</label>
+
+                <input
+                    id="login-senha"
+                    type="password"
+                    name="senha"
+                    autocomplete="current-password"
+                    placeholder="Digite sua senha"
+                    [(ngModel)]="login.senha"
+                    [attr.aria-invalid]="erro ? 'true' : null"
+                    required>
+
+            </div>
+
+            <app-button
+                tipo="submit"
+                variante="primario"
+                tamanho="grande"
+                [blocoCompleto]="true"
+                [carregando]="carregando">
+
+                Entrar
+
+            </app-button>
+
+        </form>
+
+        <p class="rodape">
+
+            Não possui uma conta?
+
+            <a routerLink="/cadastro">Cadastrar</a>
+
+        </p>
+
+    </div>
+
+</main>

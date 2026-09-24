@@ -1,0 +1,119 @@
+<h1>Avaliação Médica</h1>
+
+<div *ngIf="paciente; else semPaciente">
+
+    <div class="card">
+
+        <h2>Dados do Paciente</h2>
+
+        <div class="info">
+            <label>Nome</label>
+            <input
+                type="text"
+                [value]="paciente.nome"
+                readonly>
+        </div>
+
+        <div class="info">
+            <label>CPF</label>
+            <input
+                type="text"
+                [value]="paciente.cpf"
+                readonly>
+        </div>
+
+        <div class="info">
+            <label>Data da Avaliação</label>
+            <input
+                type="text"
+                [value]="paciente.agendamento?.data"
+                readonly>
+        </div>
+
+        <div class="info">
+            <label>Horário</label>
+            <input
+                type="text"
+                [value]="paciente.agendamento?.horario"
+                readonly>
+        </div>
+
+        <div class="info">
+            <label>Local</label>
+            <input
+                type="text"
+                [value]="paciente.agendamento?.local"
+                readonly>
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Resultado da Avaliação</h2>
+
+        <div class="radio-group">
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="resultado"
+                    value="Apto"
+                    [(ngModel)]="resultado">
+
+                Apto
+
+            </label>
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="resultado"
+                    value="Inapto"
+                    [(ngModel)]="resultado">
+
+                Inapto
+
+            </label>
+
+        </div>
+
+        <div class="info">
+
+            <label>Observações Médicas</label>
+
+            <textarea
+                rows="6"
+                [(ngModel)]="observacoes"
+                placeholder="Informe observações sobre a avaliação médica...">
+            </textarea>
+
+        </div>
+
+        <button (click)="salvar()">
+
+            Finalizar Avaliação
+
+        </button>
+
+    </div>
+
+</div>
+
+<ng-template #semPaciente>
+
+    <div class="card">
+
+        <h2>Nenhum paciente selecionado.</h2>
+
+        <p>
+
+            Retorne ao painel do médico e selecione um paciente para iniciar a avaliação.
+
+        </p>
+
+    </div>
+
+</ng-template>

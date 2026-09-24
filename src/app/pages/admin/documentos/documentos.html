@@ -1,0 +1,85 @@
+<h1>Gerenciamento de Documentos</h1>
+
+<p>
+    Visualize todos os documentos enviados pelos cidadãos.
+</p>
+
+<table>
+
+    <thead>
+
+        <tr>
+
+            <th>Cidadão</th>
+            <th>CPF</th>
+            <th>Tipo</th>
+            <th>Arquivo</th>
+            <th>Data de Envio</th>
+            <th>Status</th>
+            <th>Ações</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <tr *ngIf="documentos.length === 0">
+
+            <td colspan="7" style="text-align:center">
+
+                Nenhum documento encontrado.
+
+            </td>
+
+        </tr>
+
+        <tr *ngFor="let documento of documentos">
+
+            <td>{{ documento.usuario }}</td>
+
+            <td>{{ documento.cpf }}</td>
+
+            <td>{{ documento.tipo }}</td>
+
+            <td>{{ documento.nomeArquivo }}</td>
+
+            <td>{{ documento.dataEnvio }}</td>
+
+            <td>{{ documento.status }}</td>
+
+            <td>
+
+                <ng-container *ngIf="documento.status === 'Em análise'; else concluido">
+
+                    <button
+                        class="btn-aprovar"
+                        (click)="alterarStatus(documento, 'Aprovado')">
+
+                        Aprovar
+
+                    </button>
+
+                    <button
+                        class="btn-reprovar"
+                        (click)="alterarStatus(documento, 'Rejeitado')">
+
+                        Rejeitar
+
+                    </button>
+
+                </ng-container>
+
+                <ng-template #concluido>
+
+                    <span>Concluído</span>
+
+                </ng-template>
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>

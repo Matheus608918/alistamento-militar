@@ -1,0 +1,10 @@
+.obrigatorio {
+  color: var(--cor-perigo);
+  margin-left: var(--esp-1);
+}
+
+.ajuda {
+  margin: var(--esp-1) 0 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}

@@ -1,0 +1,502 @@
+<div class="pagina">
+
+    <div class="pagina-topo">
+
+        <h1>Gerenciamento de Cidadãos</h1>
+
+        <p>Acompanhe e emita o parecer dos alistamentos cadastrados.</p>
+
+    </div>
+
+    <div
+        class="filtros"
+        role="search">
+
+        <div class="campo-filtro">
+
+            <label for="campo-pesquisa">Pesquisar</label>
+
+            <input
+                id="campo-pesquisa"
+                type="search"
+                placeholder="Nome ou CPF"
+                [(ngModel)]="pesquisa"
+                (input)="filtrar()">
+
+        </div>
+
+        <div class="campo-filtro">
+
+            <label for="campo-status">Situação</label>
+
+            <select
+                id="campo-status"
+                [(ngModel)]="filtroStatus"
+                (change)="filtrar()">
+
+                <option value="Todos">Todos</option>
+
+                <option
+                    *ngFor="let opcao of opcoesStatus"
+                    [value]="opcao">
+
+                    {{ opcao }}
+
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <div class="tabela">
+
+        <table>
+
+            <caption class="sr-only">
+                Lista de cidadãos cadastrados, com situação e ações disponíveis
+            </caption>
+
+            <thead>
+
+                <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">CPF</th>
+                    <th scope="col">E-mail</th>
+                    <th scope="col">Situação</th>
+                    <th scope="col">Ações</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngIf="usuariosFiltrados.length === 0">
+
+                    <td colspan="5" class="vazio">
+                        Nenhum cidadão encontrado.
+                    </td>
+
+                </tr>
+
+                <tr *ngFor="let usuario of usuariosFiltrados">
+
+                    <td>{{ usuario.nome }}</td>
+
+                    <td>{{ exibirCpf(usuario.cpf) }}</td>
+
+                    <td>{{ usuario.email }}</td>
+
+                    <td>
+                        <app-status-badge
+                            [status]="usuario.status || Status.EM_ANALISE">
+                        </app-status-badge>
+                    </td>
+
+                    <td class="acoes">
+
+                        <app-button
+                            variante="secundario"
+                            tamanho="pequeno"
+                            [rotuloAcessivel]="'Visualizar ' + usuario.nome"
+                            (acionar)="visualizar(usuario)">
+
+                            Visualizar
+
+                        </app-button>
+
+                        <app-button
+                            variante="primario"
+                            tamanho="pequeno"
+                            [desabilitado]="!podeAgendar(usuario)"
+                            [motivoBloqueio]="motivoBloqueioAgendamento(usuario)"
+                            [rotuloAcessivel]="'Agendar avaliação de ' + usuario.nome"
+                            (acionar)="agendar(usuario)">
+
+                            Agendar
+
+                        </app-button>
+
+                        <app-button
+                            variante="sucesso"
+                            tamanho="pequeno"
+                            [desabilitado]="!podeEmitirParecer(usuario)"
+                            [motivoBloqueio]="motivoBloqueioParecer(usuario)"
+                            [rotuloAcessivel]="'Aprovar ' + usuario.nome"
+                            (acionar)="aprovar(usuario)">
+
+                            Aprovar
+
+                        </app-button>
+
+                        <app-button
+                            variante="perigo"
+                            tamanho="pequeno"
+                            [desabilitado]="!podeEmitirParecer(usuario)"
+                            [motivoBloqueio]="motivoBloqueioParecer(usuario)"
+                            [rotuloAcessivel]="'Reprovar ' + usuario.nome"
+                            (acionar)="reprovar(usuario)">
+
+                            Reprovar
+
+                        </app-button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <app-modal
+        [aberto]="mostrarDetalhes"
+        titulo="Detalhes do Cidadão"
+        largura="grande"
+        (fechar)="fecharDetalhes()">
+
+        <div *ngIf="usuarioSelecionado as cidadao">
+
+            <div class="trilha">
+
+                <div
+                    class="etapa"
+                    [class.concluida]="documentosAprovados(cidadao)">
+
+                    <span class="marca" aria-hidden="true">1</span>
+
+                    Documentos aprovados
+
+                </div>
+
+                <div
+                    class="etapa"
+                    [class.concluida]="temAgendamento(cidadao)">
+
+                    <span class="marca" aria-hidden="true">2</span>
+
+                    Avaliação agendada
+
+                </div>
+
+                <div
+                    class="etapa"
+                    [class.concluida]="avaliacaoConcluida(cidadao)">
+
+                    <span class="marca" aria-hidden="true">3</span>
+
+                    Avaliação concluída
+
+                </div>
+
+                <div
+                    class="etapa"
+                    [class.concluida]="jaDecidido(cidadao)">
+
+                    <span class="marca" aria-hidden="true">4</span>
+
+                    Parecer emitido
+
+                </div>
+
+            </div>
+
+            <div class="grupos">
+
+                <section class="grupo">
+
+                    <h3>Dados Pessoais</h3>
+
+                    <dl>
+
+                        <dt>Nome</dt>
+                        <dd>{{ cidadao.nome }}</dd>
+
+                        <dt>CPF</dt>
+                        <dd>{{ exibirCpf(cidadao.cpf) }}</dd>
+
+                        <dt>RG</dt>
+                        <dd>{{ cidadao.rg || '-' }}</dd>
+
+                        <dt>Nascimento</dt>
+                        <dd>{{ cidadao.dataNascimento || '-' }}</dd>
+
+                        <dt>Situação</dt>
+                        <dd>
+                            <app-status-badge
+                                [status]="cidadao.status || Status.EM_ANALISE">
+                            </app-status-badge>
+                        </dd>
+
+                    </dl>
+
+                </section>
+
+                <section class="grupo">
+
+                    <h3>Contato</h3>
+
+                    <dl>
+
+                        <dt>E-mail</dt>
+                        <dd>{{ cidadao.email }}</dd>
+
+                        <dt>Telefone</dt>
+                        <dd>{{ cidadao.telefone || '-' }}</dd>
+
+                    </dl>
+
+                </section>
+
+                <section class="grupo">
+
+                    <h3>Endereço</h3>
+
+                    <dl>
+
+                        <dt>Logradouro</dt>
+                        <dd>
+                            {{ cidadao.logradouro || '-' }}
+                            <span *ngIf="cidadao.numero">, {{ cidadao.numero }}</span>
+                        </dd>
+
+                        <dt>Bairro</dt>
+                        <dd>{{ cidadao.bairro || '-' }}</dd>
+
+                        <dt>Cidade/UF</dt>
+                        <dd>{{ cidadao.municipio || '-' }}/{{ cidadao.uf || '-' }}</dd>
+
+                        <dt>CEP</dt>
+                        <dd>{{ cidadao.cep || '-' }}</dd>
+
+                    </dl>
+
+                </section>
+
+                <section class="grupo">
+
+                    <h3>Documentos</h3>
+
+                    <p *ngIf="!cidadao.documentos?.length">
+                        Nenhum documento enviado.
+                    </p>
+
+                    <ul
+                        class="lista-documentos"
+                        *ngIf="cidadao.documentos?.length">
+
+                        <li *ngFor="let doc of cidadao.documentos">
+
+                            <span>{{ doc.tipo }}</span>
+
+                            <app-status-badge [status]="doc.status">
+                            </app-status-badge>
+
+                        </li>
+
+                    </ul>
+
+                </section>
+
+                <section class="grupo">
+
+                    <h3>Agendamento</h3>
+
+                    <p *ngIf="cidadao.agendamento">
+                        {{ cidadao.agendamento.data }}
+                        às {{ cidadao.agendamento.horario }}
+                        — {{ cidadao.agendamento.local }}
+                        (Dr(a). {{ cidadao.agendamento.medico }})
+                    </p>
+
+                    <p *ngIf="!cidadao.agendamento">
+                        Nenhum agendamento.
+                    </p>
+
+                </section>
+
+                <section class="grupo">
+
+                    <h3>Avaliação Médica</h3>
+
+                    <div *ngIf="cidadao.avaliacao">
+
+                        <p><strong>Resultado:</strong> {{ cidadao.avaliacao.resultado }}</p>
+
+                        <p *ngIf="cidadao.avaliacao.observacoes">
+                            {{ cidadao.avaliacao.observacoes }}
+                        </p>
+
+                    </div>
+
+                    <p *ngIf="!cidadao.avaliacao">
+                        Nenhuma avaliação realizada.
+                    </p>
+
+                </section>
+
+            </div>
+
+            <p
+                class="aviso"
+                *ngIf="motivoBloqueioParecer(cidadao)"
+                role="status">
+
+                {{ motivoBloqueioParecer(cidadao) }}
+
+            </p>
+
+        </div>
+
+        <ng-container rodape>
+
+            <app-button
+                *ngIf="usuarioSelecionado"
+                variante="sucesso"
+                [desabilitado]="!podeEmitirParecer(usuarioSelecionado)"
+                [motivoBloqueio]="motivoBloqueioParecer(usuarioSelecionado)"
+                (acionar)="aprovar(usuarioSelecionado)">
+
+                Aprovar
+
+            </app-button>
+
+            <app-button
+                *ngIf="usuarioSelecionado"
+                variante="perigo"
+                [desabilitado]="!podeEmitirParecer(usuarioSelecionado)"
+                [motivoBloqueio]="motivoBloqueioParecer(usuarioSelecionado)"
+                (acionar)="reprovar(usuarioSelecionado)">
+
+                Reprovar
+
+            </app-button>
+
+            <app-button
+                variante="secundario"
+                (acionar)="fecharDetalhes()">
+
+                Fechar
+
+            </app-button>
+
+        </ng-container>
+
+    </app-modal>
+
+    <app-modal
+        [aberto]="mostrarAgendamento"
+        titulo="Agendar Avaliação Médica"
+        largura="media"
+        (fechar)="fecharAgendamento()">
+
+        <div *ngIf="usuarioAgendamento as cidadao">
+
+            <p class="resumo">
+
+                <strong>{{ cidadao.nome }}</strong>
+                — CPF {{ exibirCpf(cidadao.cpf) }}
+
+            </p>
+
+            <div class="campo">
+
+                <label for="ag-medico">Médico responsável</label>
+
+                <select
+                    id="ag-medico"
+                    [(ngModel)]="medicoSelecionado"
+                    required>
+
+                    <option value="">Selecione um médico</option>
+
+                    <option
+                        *ngFor="let medico of medicos"
+                        [value]="medico.nome">
+
+                        {{ medico.nome }}
+                        <span *ngIf="medico.especialidade">
+                            — {{ medico.especialidade }}
+                        </span>
+
+                    </option>
+
+                </select>
+
+                <p class="campo-erro" *ngIf="medicos.length === 0">
+                    Nenhum médico cadastrado. Cadastre um médico antes de agendar.
+                </p>
+
+            </div>
+
+            <div class="linha">
+
+                <div class="campo">
+
+                    <label for="ag-data">Data</label>
+
+                    <input
+                        id="ag-data"
+                        type="date"
+                        [min]="dataMinima"
+                        [(ngModel)]="data"
+                        required>
+
+                </div>
+
+                <div class="campo">
+
+                    <label for="ag-horario">Horário</label>
+
+                    <input
+                        id="ag-horario"
+                        type="time"
+                        [(ngModel)]="horario"
+                        required>
+
+                </div>
+
+            </div>
+
+            <div class="campo">
+
+                <label for="ag-local">Local</label>
+
+                <input
+                    id="ag-local"
+                    type="text"
+                    placeholder="Ex.: Junta de Serviço Militar — Osasco"
+                    [(ngModel)]="local"
+                    required>
+
+            </div>
+
+        </div>
+
+        <ng-container rodape>
+
+            <app-button
+                variante="primario"
+                [desabilitado]="medicos.length === 0"
+                (acionar)="confirmarAgendamento()">
+
+                Confirmar agendamento
+
+            </app-button>
+
+            <app-button
+                variante="secundario"
+                (acionar)="fecharAgendamento()">
+
+                Cancelar
+
+            </app-button>
+
+        </ng-container>
+
+    </app-modal>
+
+</div>

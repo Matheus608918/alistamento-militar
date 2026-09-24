@@ -1,0 +1,106 @@
+<div class="dashboard">
+
+    <h1>Dashboard do Médico</h1>
+
+    <p>
+        Bem-vindo, <strong>{{ medico.nome }}</strong>.
+    </p>
+
+    <div class="cards">
+
+        <div class="card">
+
+            <h2>{{ avaliacoesHoje }}</h2>
+
+            <span>Avaliações Agendadas</span>
+
+        </div>
+
+        <div class="card">
+
+            <h2>{{ pendentes }}</h2>
+
+            <span>Pendentes</span>
+
+        </div>
+
+        <div class="card">
+
+            <h2>{{ finalizadas }}</h2>
+
+            <span>Finalizadas</span>
+
+        </div>
+
+    </div>
+
+    <div class="lista">
+
+        <h2>Pacientes aguardando avaliação</h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngIf="pacientesHoje.length === 0">
+
+                    <td colspan="6">
+
+                        Nenhum paciente aguardando avaliação.
+
+                    </td>
+
+                </tr>
+
+                <tr *ngFor="let usuario of pacientesHoje">
+
+                    <td>{{ usuario.nome }}</td>
+
+                    <td>{{ usuario.cpf }}</td>
+
+                    <td>{{ usuario.agendamento.data }}</td>
+
+                    <td>{{ usuario.agendamento.horario }}</td>
+
+                    <td>
+
+                        {{ usuario.agendamento.status || 'Agendado' }}
+
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="btn-avaliar"
+                            (click)="avaliar(usuario)">
+
+                            Avaliar
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

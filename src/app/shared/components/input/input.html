@@ -1,0 +1,51 @@
+<div class="campo">
+
+    <label
+        [attr.for]="id"
+        *ngIf="rotulo">
+
+        {{ rotulo }}
+
+        <span
+            class="obrigatorio"
+            *ngIf="obrigatorio"
+            aria-hidden="true">*</span>
+
+        <span
+            class="sr-only"
+            *ngIf="obrigatorio">(obrigatório)</span>
+
+    </label>
+
+    <input
+        [id]="id"
+        [type]="tipo"
+        [value]="valor"
+        [placeholder]="placeholder"
+        [disabled]="desabilitado"
+        [attr.required]="obrigatorio ? '' : null"
+        [attr.aria-invalid]="erro ? 'true' : null"
+        [attr.aria-describedby]="descritoPor"
+        (input)="aoDigitar($event)"
+        (blur)="marcarTocado()">
+
+    <p
+        class="ajuda"
+        [id]="idAjuda"
+        *ngIf="ajuda">
+
+        {{ ajuda }}
+
+    </p>
+
+    <p
+        class="campo-erro"
+        [id]="idErro"
+        role="alert"
+        *ngIf="erro">
+
+        {{ erro }}
+
+    </p>
+
+</div>

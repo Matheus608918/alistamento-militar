@@ -1,0 +1,123 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.dashboard-container{
+    min-height:100vh;
+    background:#f5f7fa;
+    padding:40px;
+}
+
+/* CABEÇALHO */
+
+.dashboard-header{
+    margin-bottom:40px;
+}
+
+.dashboard-header h1{
+    color:#2F5233;
+    font-size:36px;
+    margin-bottom:8px;
+}
+
+.dashboard-header p{
+    color:#666;
+    font-size:18px;
+}
+
+/* CARDS */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+    margin-bottom:40px;
+}
+
+.card{
+    background:#fff;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+}
+
+.card h3{
+    color:#2F5233;
+    margin-bottom:15px;
+}
+
+.card p{
+    color:#666;
+    line-height:1.6;
+}
+
+/* STATUS */
+
+.status{
+    display:inline-block;
+    padding:10px 18px;
+    border-radius:30px;
+    font-weight:bold;
+}
+
+.andamento{
+    background:#fff3cd;
+    color:#856404;
+}
+
+/* TABELA */
+
+.atividade{
+    background:white;
+    border-radius:15px;
+    padding:30px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.atividade h2{
+    color:#2F5233;
+    margin-bottom:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#2F5233;
+    color:white;
+    padding:15px;
+    text-align:left;
+}
+
+td{
+    padding:15px;
+    border-bottom:1px solid #e5e5e5;
+}
+
+tr:hover{
+    background:#f8f8f8;
+}
+
+/* RESPONSIVO */
+
+@media(max-width:768px){
+
+.dashboard-container{
+    padding:20px;
+}
+
+.dashboard-header h1{
+    font-size:28px;
+}
+
+}
