@@ -6,6 +6,8 @@
         Bem-vindo, <strong>{{ medico.nome }}</strong>.
     </p>
 
+    <p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
     <div class="cards">
 
         <div class="card">
@@ -79,7 +81,7 @@
 
                     <td>
 
-                        {{ usuario.agendamento.status || 'Agendado' }}
+                        {{ usuario.agendamento.status }}
 
                     </td>
 

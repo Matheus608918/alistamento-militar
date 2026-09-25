@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, roleGuard } from './guards/auth.guard';
+import { authGuard, roleGuard, rascunhoCadastroGuard } from './guards/auth.guard';
 import { Perfil } from './shared/enums/perfil.enum';
 
 import { MainLayout } from './layouts/main-layout/main-layout';
@@ -51,6 +51,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'cadastro-complementar',
+    component: CadastroComplementar,
+    canActivate: [rascunhoCadastroGuard],
+    title: 'Cadastro complementar'
+  },
+
+  {
     path: '',
     component: MainLayout,
     canActivate: [authGuard],
@@ -68,14 +75,6 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { perfis: [Perfil.CIDADAO] },
         title: 'Meu painel'
-      },
-
-      {
-        path: 'cadastro-complementar',
-        component: CadastroComplementar,
-        canActivate: [roleGuard],
-        data: { perfis: [Perfil.CIDADAO] },
-        title: 'Cadastro complementar'
       },
 
       {

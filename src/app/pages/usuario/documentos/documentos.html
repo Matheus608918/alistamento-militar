@@ -6,52 +6,99 @@
         Envie os documentos necessários para análise da Junta Militar.
     </p>
 
-    <div class="form-group">
+    <div class="erro" *ngIf="erro" role="alert">{{ erro }}</div>
 
-        <label>Tipo do Documento</label>
-
-        <select [(ngModel)]="tipoDocumento">
-
-            <option value="">Selecione</option>
-
-            <option value="RG">RG</option>
-
-            <option value="CPF">CPF</option>
-
-            <option value="Certidão de Nascimento">
-                Certidão de Nascimento
-            </option>
-
-            <option value="Comprovante de Residência">
-                Comprovante de Residência
-            </option>
-
-            <option value="Certificado de Escolaridade">
-                Certificado de Escolaridade
-            </option>
-
-        </select>
-
+    <div class="aviso" *ngIf="!erro && !podeEnviar && processo">
+        Sua documentação já foi aprovada. Não é necessário enviar novos documentos.
     </div>
 
-    <div class="form-group">
-
-        <label>Arquivo</label>
-
-        <input
-            type="file"
-            (change)="selecionarArquivo($event)">
-
+    <div class="aviso" *ngIf="podeEnviar && tipos.length === 0">
+        Nenhum tipo de documento cadastrado. Aguarde a Junta Militar configurar o sistema.
     </div>
 
-    <button
-        class="btn-enviar"
-        type="button"
-        (click)="enviarDocumento()">
+    <ng-container *ngIf="podeEnviar && tipos.length > 0">
 
-        Enviar Documento
+        <div class="grid">
 
-    </button>
+            <div class="form-group">
+
+                <label for="doc-tipo">Tipo do Documento</label>
+
+                <select id="doc-tipo" [(ngModel)]="tipoDocumento">
+
+                    <option [ngValue]="null">Selecione</option>
+
+                    <option
+                        *ngFor="let tipo of tipos"
+                        [ngValue]="tipo.idTipoDocumento">
+
+                        {{ tipo.nomeTipo }}
+
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+                <label for="doc-numero">Número do Documento</label>
+                <input id="doc-numero" type="text" maxlength="50" [(ngModel)]="numeroDocumento">
+            </div>
+
+            <div class="form-group">
+                <label for="doc-folha">Folha (opcional)</label>
+                <input id="doc-folha" type="text" maxlength="50" [(ngModel)]="numeroFolha">
+            </div>
+
+            <div class="form-group">
+                <label for="doc-livro">Livro (opcional)</label>
+                <input id="doc-livro" type="text" maxlength="50" [(ngModel)]="numeroLivro">
+            </div>
+
+            <div class="form-group">
+                <label for="doc-emissao">Data de Emissão</label>
+                <input id="doc-emissao" type="date" [max]="dataMaxima" [(ngModel)]="dataEmissao">
+            </div>
+
+            <div class="form-group">
+                <label for="doc-orgao">Órgão Emissor</label>
+                <input id="doc-orgao" type="text" maxlength="100" placeholder="Ex.: SSP" [(ngModel)]="orgaoEmissor">
+            </div>
+
+            <div class="form-group">
+                <label for="doc-cidade">Cidade de Emissão</label>
+                <input id="doc-cidade" type="text" maxlength="100" [(ngModel)]="cidadeEmissao">
+            </div>
+
+            <div class="form-group">
+                <label for="doc-estado">Estado de Emissão</label>
+                <input id="doc-estado" type="text" maxlength="50" placeholder="Ex.: SP" [(ngModel)]="estadoEmissao">
+            </div>
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="doc-arquivo">Arquivo</label>
+
+            <input
+                id="doc-arquivo"
+                type="file"
+                (change)="selecionarArquivo($event)">
+
+        </div>
+
+        <button
+            class="btn-enviar"
+            type="button"
+            [disabled]="enviando"
+            (click)="enviarDocumento()">
+
+            {{ enviando ? 'Enviando...' : 'Enviar Documento' }}
+
+        </button>
+
+    </ng-container>
 
     <hr>
 
@@ -89,7 +136,7 @@
 
             </tr>
 
-            <tr *ngFor="let doc of documentos; let i = index">
+            <tr *ngFor="let doc of documentos">
 
                 <td>{{ doc.tipo }}</td>
 
@@ -120,12 +167,15 @@
                 <td>
 
                     <button
+                        *ngIf="podeEnviar; else semAcao"
                         class="btn-excluir"
-                        (click)="excluirDocumento(i)">
+                        (click)="excluirDocumento(doc)">
 
                         Excluir
 
                     </button>
+
+                    <ng-template #semAcao>-</ng-template>
 
                 </td>
 

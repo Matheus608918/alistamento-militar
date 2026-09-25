@@ -1,8 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
+import { AuthService } from '../../../services/auth';
+import { ApiService, mensagemErro } from '../../../services/api.service';
+import { CidadaoView, ProcessoService } from '../../../services/processo.service';
+import { ResultadoAvaliacao } from '../../../models/api.models';
 import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
+import { hojeIso, vazioParaNull } from '../../../shared/utils/formatadores';
 
 @Component({
   selector: 'app-avaliacao',
@@ -16,97 +22,107 @@ import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
 })
 export class Avaliacao implements OnInit {
 
-  usuarios: any[] = [];
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private auth = inject(AuthService);
+  private api = inject(ApiService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  paciente: any = null;
+  paciente: CidadaoView | null = null;
 
-  resultado = '';
+  resultado: ResultadoAvaliacao | '' = '';
 
   observacoes = '';
 
-  medico: any = {};
+  salvando = false;
 
-  ngOnInit(): void {
+  erro = '';
 
-    this.usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+  async ngOnInit(): Promise<void> {
 
-    this.medico = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
+    const idAlistamento = Number(this.route.snapshot.queryParamMap.get('alistamento'));
 
-    const emailPaciente = localStorage.getItem(
-      'pacienteSelecionado'
-    );
+    if (!idAlistamento) {
+      return;
+    }
 
-    this.paciente = this.usuarios.find(
-      (u: any) => u.email === emailPaciente
-    ) || null;
+    try {
+
+      const processo = await this.processoService.carregarPorAlistamento(idAlistamento);
+
+      this.paciente = this.processoService.paraView(processo);
+
+    } catch (erro) {
+
+      this.erro = mensagemErro(erro, 'Não foi possível carregar o paciente.');
+
+    } finally {
+
+      this.cdr.markForCheck();
+
+    }
 
   }
 
-  salvar() {
+  async salvar(): Promise<void> {
+
+    const paciente = this.paciente;
+    const processo = paciente?.processo;
+    const medico = this.auth.usuarioAtual();
+
+    if (!paciente || !processo?.alistamento || !medico) {
+      return;
+    }
+
+    if (paciente.avaliacao) {
+      alert('Este paciente já foi avaliado.');
+      return;
+    }
+
+    if (!processo.agendamento) {
+      alert('Este paciente não possui agendamento.');
+      return;
+    }
 
     if (!this.resultado) {
-
       alert('Selecione o resultado da avaliação.');
-
       return;
-
     }
 
-    this.paciente.avaliacao = {
+    this.salvando = true;
+    this.cdr.markForCheck();
 
-      data: new Date().toLocaleDateString('pt-BR'),
+    try {
 
-      resultado: this.resultado,
+      await this.api.cadastrarAvaliacao({
+        dataAvaliacao: hojeIso(),
+        resultado: this.resultado,
+        observacoes: vazioParaNull(this.observacoes),
+        idAlistamento: processo.alistamento.id,
+        idMedico: medico.id,
+        idLocal: processo.agendamento.localResponseDTO.id
+      });
 
-      observacoes: this.observacoes,
-
-      medico: this.medico.nome || 'Médico'
-
-    };
-
-    this.paciente.status = StatusAlistamento.AVALIACAO_CONCLUIDA;
-
-    if (this.paciente.agendamento) {
-
-      this.paciente.agendamento.status = 'Concluído';
-
-    }
-
-    const indice = this.usuarios.findIndex(
-      (u: any) => u.email === this.paciente.email
-    );
-
-    if (indice !== -1) {
-
-      this.usuarios[indice] = this.paciente;
-
-    }
-
-    localStorage.setItem(
-      'usuarios',
-      JSON.stringify(this.usuarios)
-    );
-
-    const usuarioLogado = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
-
-    if (usuarioLogado.email === this.paciente.email) {
-
-      const { senha, ...pacienteSemSenha } = this.paciente;
-
-      localStorage.setItem(
-        'usuarioLogado',
-        JSON.stringify(pacienteSemSenha)
+      await this.processoService.atualizarStatus(
+        processo.alistamento.id,
+        StatusAlistamento.AVALIACAO_CONCLUIDA
       );
 
-    }
+      alert('Avaliação médica salva com sucesso!');
 
-    alert('Avaliação médica salva com sucesso!');
+      await this.router.navigate(['/medico/dashboard']);
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível salvar a avaliação.'));
+
+    } finally {
+
+      this.salvando = false;
+      this.cdr.markForCheck();
+
+    }
 
   }
 

@@ -10,6 +10,10 @@
 
     </div>
 
+    <p class="aviso" *ngIf="carregando">Carregando informações...</p>
+
+    <p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
     <div class="cards">
 
         <div class="card">
@@ -63,6 +67,12 @@
                 <p>
 
                     {{ agendamento.horario }}
+
+                </p>
+
+                <p>
+
+                    {{ agendamento.local }}
 
                 </p>
 
@@ -124,7 +134,7 @@
 
                     <td>
 
-                        {{ quantidadeDocumentos > 0 ? 'Enviados' : 'Pendente' }}
+                        {{ statusDocumentos }}
 
                     </td>
 
@@ -136,7 +146,7 @@
 
                     <td>
 
-                        {{ agendamento ? 'Agendada' : 'Pendente' }}
+                        {{ statusAvaliacao }}
 
                     </td>
 

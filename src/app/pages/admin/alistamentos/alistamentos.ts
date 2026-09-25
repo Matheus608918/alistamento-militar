@@ -1,5 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { mensagemErro } from '../../../services/api.service';
+import { AuthService } from '../../../services/auth';
+import { CidadaoView, ProcessoService } from '../../../services/processo.service';
 
 @Component({
   selector: 'app-alistamentos',
@@ -10,43 +14,65 @@ import { CommonModule } from '@angular/common';
 })
 export class Alistamentos implements OnInit {
 
-  usuarios: any[] = [];
+  private auth = inject(AuthService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
+
+  usuarios: CidadaoView[] = [];
+
+  erro = '';
 
   ngOnInit(): void {
     this.carregarUsuarios();
   }
 
-  carregarUsuarios() {
-    this.usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
-  }
+  async carregarUsuarios(): Promise<void> {
 
-  alterarStatus(usuario: any, status: string) {
+    try {
 
-    usuario.status = status;
+      const processos = await this.processoService.carregarTodos();
 
-    localStorage.setItem(
-      'usuarios',
-      JSON.stringify(this.usuarios)
-    );
+      this.usuarios = processos.map(p => this.processoService.paraView(p));
+      this.erro = '';
 
-    const usuarioLogado = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
+    } catch (erro) {
 
-    if (usuarioLogado.email === usuario.email) {
+      this.erro = mensagemErro(erro, 'Não foi possível carregar os alistamentos.');
 
-      const { senha, ...semSenha } = usuario;
+    } finally {
 
-      localStorage.setItem(
-        'usuarioLogado',
-        JSON.stringify(semSenha)
-      );
+      this.cdr.markForCheck();
 
     }
 
-    alert('Status atualizado com sucesso.');
+  }
+
+  async alterarStatus(usuario: CidadaoView, status: string): Promise<void> {
+
+    const alistamento = usuario.processo.alistamento;
+
+    if (!alistamento) {
+      alert('Este cidadão ainda não possui alistamento aberto.');
+      return;
+    }
+
+    try {
+
+      await this.processoService.atualizarStatus(
+        alistamento.id,
+        status,
+        this.auth.usuarioAtual()?.id
+      );
+
+      alert('Status atualizado com sucesso.');
+
+      await this.carregarUsuarios();
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível atualizar o status.'));
+
+    }
 
   }
 

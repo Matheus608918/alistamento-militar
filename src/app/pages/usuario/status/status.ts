@@ -1,5 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { AuthService } from '../../../services/auth';
+import { ProcessoService } from '../../../services/processo.service';
+import { StatusAlistamento, StatusDocumento } from '../../../shared/enums/perfil.enum';
 
 @Component({
   selector: 'app-status',
@@ -10,6 +14,10 @@ import { CommonModule } from '@angular/common';
 })
 export class Status implements OnInit {
 
+  private auth = inject(AuthService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
+
   cadastro = 'Concluído';
   cadastroComplementar = 'Concluído';
   documentos = 'Pendente';
@@ -17,70 +25,56 @@ export class Status implements OnInit {
   avaliacao = 'Aguardando';
   resultado = 'Pendente';
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
 
-    const usuario = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
+    const sessao = this.auth.usuarioAtual();
 
-    if (!usuario || !usuario.email) {
+    if (!sessao) {
       return;
     }
 
-    // DOCUMENTOS
-    if (usuario.documentos && usuario.documentos.length > 0) {
+    try {
 
-      const todosAprovados = usuario.documentos.every(
-        (doc: any) => doc.status === 'Aprovado'
-      );
+      const processo = await this.processoService.carregarDoUsuario(sessao.id);
+      const status = processo.status;
 
-      if (todosAprovados) {
+      const statusDocs = this.processoService.statusDocumentos(processo);
 
-        this.documentos = 'Aprovados';
+      this.documentos =
+        statusDocs === StatusDocumento.APROVADO ? 'Aprovados' :
+        statusDocs === StatusDocumento.REPROVADO ? 'Reprovados' :
+        statusDocs;
 
-      } else {
-
-        this.documentos = 'Em análise';
-
+      if (status === StatusAlistamento.EM_ANALISE) {
+        this.analise = 'Em análise';
+      } else if (status === StatusAlistamento.DOCUMENTOS_REPROVADOS) {
+        this.analise = 'Documentação reprovada';
+      } else if (statusDocs === StatusDocumento.APROVADO) {
+        this.analise = 'Concluída';
       }
 
-    }
+      if (processo.avaliacao) {
+        this.avaliacao = 'Concluída';
+      } else if (processo.agendamento) {
+        this.avaliacao = 'Agendada';
+      }
 
-    // ANÁLISE
-    if (usuario.status === 'Em análise') {
+      if (
+        status === StatusAlistamento.APROVADO ||
+        status === StatusAlistamento.REPROVADO
+      ) {
+        this.resultado = status;
+      } else if (processo.avaliacao) {
+        this.resultado = `Aguardando parecer (avaliação: ${processo.avaliacao.resultado})`;
+      }
 
-      this.analise = 'Em análise';
+    } catch (erro) {
 
-    }
+      console.error(erro);
 
-    // AGENDAMENTO
-    if (usuario.agendamento) {
+    } finally {
 
-      this.analise = 'Concluída';
-
-      this.avaliacao = 'Agendada';
-
-    }
-
-    // AVALIAÇÃO MÉDICA
-    if (
-      usuario.avaliacao &&
-      usuario.avaliacao.resultado
-    ) {
-
-      this.avaliacao = 'Concluída';
-
-      this.resultado = usuario.avaliacao.resultado;
-
-    }
-
-    // RESULTADO FINAL
-    if (
-      usuario.status === 'Aprovado' ||
-      usuario.status === 'Reprovado'
-    ) {
-
-      this.resultado = usuario.status;
+      this.cdr.markForCheck();
 
     }
 

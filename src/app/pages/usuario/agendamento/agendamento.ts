@@ -1,5 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { AuthService } from '../../../services/auth';
+import { mensagemErro } from '../../../services/api.service';
+import { AgendamentoView, ProcessoService } from '../../../services/processo.service';
 
 @Component({
   selector: 'app-agendamento',
@@ -10,78 +14,37 @@ import { CommonModule } from '@angular/common';
 })
 export class Agendamento implements OnInit {
 
-  confirmado = false;
+  private auth = inject(AuthService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  agendamento: any = null;
+  agendamento: AgendamentoView | null = null;
 
-  usuario: any = null;
+  erro = '';
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
 
-    const usuarioLogado = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
+    const sessao = this.auth.usuarioAtual();
 
-    const usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
-
-    this.usuario = usuarios.find(
-      (u: any) => u.email === usuarioLogado.email
-    );
-
-    if (!this.usuario) {
+    if (!sessao) {
       return;
     }
 
-    this.agendamento = this.usuario.agendamento || null;
+    try {
 
-    this.confirmado =
-      this.agendamento?.confirmado || false;
+      const processo = await this.processoService.carregarDoUsuario(sessao.id);
 
-  }
+      this.agendamento = this.processoService.paraView(processo).agendamento;
 
-  confirmarPresenca(): void {
+    } catch (erro) {
 
-    if (!this.usuario || !this.usuario.agendamento) {
+      this.erro = mensagemErro(erro, 'Não foi possível carregar o agendamento.');
 
-      alert('Nenhum agendamento encontrado.');
+    } finally {
 
-      return;
-
-    }
-
-    this.confirmado = true;
-
-    this.usuario.agendamento.confirmado = true;
-
-    const usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
-
-    const indice = usuarios.findIndex(
-      (u: any) => u.email === this.usuario.email
-    );
-
-    if (indice !== -1) {
-
-      usuarios[indice] = this.usuario;
-
-      localStorage.setItem(
-        'usuarios',
-        JSON.stringify(usuarios)
-      );
-
-      const { senha, ...usuarioSemSenha } = this.usuario;
-
-      localStorage.setItem(
-        'usuarioLogado',
-        JSON.stringify(usuarioSemSenha)
-      );
+      this.cdr.markForCheck();
 
     }
-
-    alert('Presença confirmada com sucesso!');
 
   }
 

@@ -150,3 +150,10 @@ tbody tr:hover{
     }
 
 }
+.erro{
+    background:#fdecea;
+    color:#b71c1c;
+    padding:12px 16px;
+    border-radius:8px;
+    margin-bottom:16px;
+}

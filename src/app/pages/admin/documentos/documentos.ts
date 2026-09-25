@@ -1,5 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { mensagemErro } from '../../../services/api.service';
+import { Processo, ProcessoService } from '../../../services/processo.service';
+import { StatusAlistamento, StatusDocumento } from '../../../shared/enums/perfil.enum';
+import { formatarData } from '../../../shared/utils/formatadores';
+
+interface LinhaDocumento {
+  usuario: string;
+  cpf: string;
+  tipo: string;
+  numero: string;
+  nomeArquivo: string;
+  dataEnvio: string;
+  status: string;
+  processo: Processo;
+}
 
 @Component({
   selector: 'app-documentos',
@@ -10,89 +26,97 @@ import { CommonModule } from '@angular/common';
 })
 export class Documentos implements OnInit {
 
-  usuarios: any[] = [];
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  documentos: any[] = [];
+  documentos: LinhaDocumento[] = [];
+
+  erro = '';
 
   ngOnInit(): void {
     this.carregarDocumentos();
   }
 
-  carregarDocumentos() {
+  async carregarDocumentos(): Promise<void> {
 
-    this.usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+    try {
 
-    this.documentos = [];
+      const processos = await this.processoService.carregarTodos();
 
-    this.usuarios.forEach((usuario: any, usuarioIndex: number) => {
+      this.documentos = [];
 
-      if (usuario.documentos) {
+      processos.forEach(processo => {
 
-        usuario.documentos.forEach((documento: any, documentoIndex: number) => {
+        const status = this.processoService.statusDocumentos(processo);
+
+        processo.documentos.forEach(documento => {
 
           this.documentos.push({
-
-            usuario: usuario.nome,
-
-            cpf: usuario.cpf,
-
-            tipo: documento.tipo,
-
+            usuario: processo.usuario.nome,
+            cpf: processo.usuario.cpf,
+            tipo: documento.tipoDocumentoResponseDTO?.nomeTipo ?? '-',
+            numero: documento.numeroDocumento,
             nomeArquivo: documento.nomeArquivo,
-
-            dataEnvio: documento.dataEnvio,
-
-            status: documento.status || 'Em análise',
-
-            usuarioIndex,
-
-            documentoIndex
-
+            dataEnvio: formatarData(documento.dataEnvio),
+            status,
+            processo
           });
 
         });
 
-      }
+      });
 
-    });
+      this.erro = '';
 
-  }
+    } catch (erro) {
 
-  alterarStatus(documento: any, status: string) {
+      this.erro = mensagemErro(erro, 'Não foi possível carregar os documentos.');
 
-    documento.status = status;
+    } finally {
 
-    this.usuarios[documento.usuarioIndex]
-      .documentos[documento.documentoIndex]
-      .status = status;
-
-    localStorage.setItem(
-      'usuarios',
-      JSON.stringify(this.usuarios)
-    );
-
-    const usuarioLogado = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
-
-    if (
-      usuarioLogado.email ===
-      this.usuarios[documento.usuarioIndex].email
-    ) {
-
-      const { senha, ...semSenha } =
-        this.usuarios[documento.usuarioIndex];
-
-      localStorage.setItem(
-        'usuarioLogado',
-        JSON.stringify(semSenha)
-      );
+      this.cdr.markForCheck();
 
     }
 
-    alert('Status do documento atualizado com sucesso.');
+  }
+
+  async alterarStatus(documento: LinhaDocumento, status: string): Promise<void> {
+
+    const alistamento = documento.processo.alistamento;
+
+    if (!alistamento) {
+      alert('Este cidadão não possui alistamento aberto.');
+      return;
+    }
+
+    const aprovar = status === StatusDocumento.APROVADO;
+
+    const pergunta = aprovar
+      ? `Aprovar TODA a documentação de ${documento.usuario}?`
+      : `Reprovar a documentação de ${documento.usuario}? Ele precisará reenviar os documentos.`;
+
+    if (!confirm(pergunta)) {
+      return;
+    }
+
+    try {
+
+      await this.processoService.atualizarStatus(
+        alistamento.id,
+        aprovar
+          ? StatusAlistamento.DOCUMENTOS_APROVADOS
+          : StatusAlistamento.DOCUMENTOS_REPROVADOS
+      );
+
+      alert('Status da documentação atualizado com sucesso.');
+
+      await this.carregarDocumentos();
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível atualizar o status.'));
+
+    }
 
   }
 

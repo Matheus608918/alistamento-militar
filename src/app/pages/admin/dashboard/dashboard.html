@@ -10,6 +10,8 @@
 
 </div>
 
+<p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
 <div class="cards">
 
     <div class="card">
@@ -192,15 +194,15 @@
 
             </tr>
 
-            <tr *ngFor="let usuario of ultimosAgendamentos">
+            <tr *ngFor="let linha of ultimosAgendamentos">
 
-                <td>{{ usuario.nome }}</td>
+                <td>{{ linha.nome }}</td>
 
-                <td>{{ usuario.agendamento.data }}</td>
+                <td>{{ linha.agendamento.data }}</td>
 
-                <td>{{ usuario.agendamento.horario }}</td>
+                <td>{{ linha.agendamento.horario }}</td>
 
-                <td>{{ usuario.agendamento.local }}</td>
+                <td>{{ linha.agendamento.local }}</td>
 
             </tr>
 

@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { Documento } from '../../../models/documento.model';
-import { Usuario } from '../../../models/usuario.model';
-
-import { UsuarioService } from '../../../services/usuario.service';
+import { AuthService } from '../../../services/auth';
+import { ApiService, mensagemErro } from '../../../services/api.service';
+import { DocumentoView, Processo, ProcessoService } from '../../../services/processo.service';
+import { TipoDocumentoApi } from '../../../models/api.models';
+import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
+import { agoraIso, hojeIso, vazioParaNull } from '../../../shared/utils/formatadores';
 
 @Component({
   selector: 'app-documentos',
@@ -19,91 +21,201 @@ import { UsuarioService } from '../../../services/usuario.service';
 })
 export class Documentos implements OnInit {
 
-  documentos: Documento[] = [];
+  private auth = inject(AuthService);
+  private api = inject(ApiService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  tipoDocumento = '';
+  processo: Processo | null = null;
+
+  documentos: DocumentoView[] = [];
+
+  tipos: TipoDocumentoApi[] = [];
+
+  podeEnviar = false;
+
+  enviando = false;
+
+  erro = '';
+
+  readonly dataMaxima = hojeIso();
+
+  tipoDocumento: number | null = null;
+  numeroDocumento = '';
+  numeroFolha = '';
+  numeroLivro = '';
+  dataEmissao = '';
+  orgaoEmissor = '';
+  cidadeEmissao = '';
+  estadoEmissao = '';
 
   arquivoSelecionado: File | null = null;
 
-  usuarioLogado: Usuario = {} as Usuario;
+  async ngOnInit(): Promise<void> {
+    await this.carregar();
+  }
 
-  constructor(
-    private usuarioService: UsuarioService
-  ) {}
+  async carregar(): Promise<void> {
 
-  ngOnInit(): void {
+    const sessao = this.auth.usuarioAtual();
 
-    const usuario = this.usuarioService.buscarUsuarioLogado();
+    if (!sessao) {
+      return;
+    }
 
-    if (usuario) {
+    try {
 
-      this.usuarioLogado = usuario;
+      await this.processoService.garantirAlistamento(sessao.id);
 
-      this.documentos = usuario.documentos || [];
+      const [processo, tipos] = await Promise.all([
+        this.processoService.carregarDoUsuario(sessao.id),
+        this.api.listarTiposDocumento()
+      ]);
+
+      this.processo = processo;
+      this.tipos = tipos;
+      this.documentos = this.processoService.paraView(processo).documentos;
+      this.podeEnviar = this.processoService.podeEnviarDocumentos(processo);
+      this.erro = '';
+
+    } catch (erro) {
+
+      this.erro = mensagemErro(erro, 'Não foi possível carregar seus documentos.');
+
+    } finally {
+
+      this.cdr.markForCheck();
 
     }
 
   }
 
-  selecionarArquivo(event: any) {
+  selecionarArquivo(event: Event) {
 
-    if (event.target.files.length > 0) {
+    const input = event.target as HTMLInputElement;
 
-      this.arquivoSelecionado = event.target.files[0];
-
-    }
+    this.arquivoSelecionado = input.files && input.files.length > 0
+      ? input.files[0]
+      : null;
 
   }
 
-  enviarDocumento() {
+  async enviarDocumento(): Promise<void> {
+
+    const processo = this.processo;
+
+    if (!processo?.alistamento) {
+      alert('Seu alistamento ainda não foi aberto.');
+      return;
+    }
 
     if (!this.tipoDocumento) {
-
       alert('Selecione o tipo do documento.');
       return;
+    }
 
+    if (
+      !this.numeroDocumento.trim() ||
+      !this.dataEmissao ||
+      !this.orgaoEmissor.trim() ||
+      !this.cidadeEmissao.trim() ||
+      !this.estadoEmissao.trim()
+    ) {
+      alert('Preencha número, data de emissão, órgão emissor, cidade e estado de emissão.');
+      return;
     }
 
     if (!this.arquivoSelecionado) {
-
       alert('Selecione um arquivo.');
       return;
+    }
+
+    this.enviando = true;
+    this.cdr.markForCheck();
+
+    try {
+
+      await this.api.cadastrarDocumento({
+        numeroDocumento: this.numeroDocumento.trim(),
+        numeroFolha: vazioParaNull(this.numeroFolha),
+        numeroLivro: vazioParaNull(this.numeroLivro),
+        dataEmissao: this.dataEmissao,
+        orgaoEmissor: this.orgaoEmissor.trim(),
+        cidadeEmissao: this.cidadeEmissao.trim(),
+        estadoEmissao: this.estadoEmissao.trim(),
+        nomeArquivo: this.arquivoSelecionado.name.substring(0, 100),
+        dataEnvio: agoraIso(),
+        idUsuario: processo.usuario.id,
+        idAlistamento: processo.alistamento.id,
+        idTipoDocumento: this.tipoDocumento
+      });
+
+      if (
+        processo.status === StatusAlistamento.AGUARDANDO_DOCUMENTOS ||
+        processo.status === StatusAlistamento.DOCUMENTOS_REPROVADOS ||
+        processo.status === StatusAlistamento.CADASTRO_INCOMPLETO
+      ) {
+        await this.processoService.atualizarStatus(
+          processo.alistamento.id,
+          StatusAlistamento.EM_ANALISE
+        );
+      }
+
+      this.limparFormulario();
+
+      alert('Documento enviado com sucesso.');
+
+      await this.carregar();
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível enviar o documento.'));
+
+    } finally {
+
+      this.enviando = false;
+      this.cdr.markForCheck();
 
     }
 
-    const novoDocumento: Documento = {
+  }
 
-      tipo: this.tipoDocumento,
+  async excluirDocumento(documento: DocumentoView): Promise<void> {
 
-      nomeArquivo: this.arquivoSelecionado.name,
+    if (!this.podeEnviar) {
+      alert('A documentação já foi aprovada e não pode mais ser alterada.');
+      return;
+    }
 
-      dataEnvio: new Date().toLocaleDateString('pt-BR'),
+    if (!confirm(`Excluir o documento "${documento.tipo}"?`)) {
+      return;
+    }
 
-      status: 'Em análise'
+    try {
 
-    };
+      await this.api.excluirDocumento(documento.id);
 
-    this.documentos.push(novoDocumento);
+      await this.carregar();
 
-    this.usuarioLogado.documentos = this.documentos;
+    } catch (erro) {
 
-    this.usuarioService.atualizarUsuario(this.usuarioLogado);
+      alert(mensagemErro(erro, 'Não foi possível excluir o documento.'));
 
-    this.tipoDocumento = '';
-
-    this.arquivoSelecionado = null;
-
-    alert('Documento enviado com sucesso.');
+    }
 
   }
 
-  excluirDocumento(index: number) {
+  private limparFormulario(): void {
 
-    this.documentos.splice(index, 1);
-
-    this.usuarioLogado.documentos = this.documentos;
-
-    this.usuarioService.atualizarUsuario(this.usuarioLogado);
+    this.tipoDocumento = null;
+    this.numeroDocumento = '';
+    this.numeroFolha = '';
+    this.numeroLivro = '';
+    this.dataEmissao = '';
+    this.orgaoEmissor = '';
+    this.cidadeEmissao = '';
+    this.estadoEmissao = '';
+    this.arquivoSelecionado = null;
 
   }
 

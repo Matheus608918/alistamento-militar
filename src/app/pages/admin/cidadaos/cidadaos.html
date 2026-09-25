@@ -8,6 +8,8 @@
 
     </div>
 
+    <p class="aviso" *ngIf="erro" role="alert">{{ erro }}</p>
+
     <div
         class="filtros"
         role="search">
@@ -309,7 +311,7 @@
                         {{ cidadao.agendamento.data }}
                         às {{ cidadao.agendamento.horario }}
                         — {{ cidadao.agendamento.local }}
-                        (Dr(a). {{ cidadao.agendamento.medico }})
+                        <span *ngIf="cidadao.agendamento.medico">(Dr(a). {{ cidadao.agendamento.medico }})</span>
                     </p>
 
                     <p *ngIf="!cidadao.agendamento">
@@ -376,6 +378,15 @@
             </app-button>
 
             <app-button
+                *ngIf="usuarioSelecionado"
+                variante="perigo"
+                (acionar)="excluir(usuarioSelecionado)">
+
+                Excluir cadastro
+
+            </app-button>
+
+            <app-button
                 variante="secundario"
                 (acionar)="fecharDetalhes()">
 
@@ -404,30 +415,27 @@
 
             <div class="campo">
 
-                <label for="ag-medico">Médico responsável</label>
+                <label for="ag-local">Local da avaliação</label>
 
                 <select
-                    id="ag-medico"
-                    [(ngModel)]="medicoSelecionado"
+                    id="ag-local"
+                    [(ngModel)]="localSelecionado"
                     required>
 
-                    <option value="">Selecione um médico</option>
+                    <option [ngValue]="null">Selecione um local</option>
 
                     <option
-                        *ngFor="let medico of medicos"
-                        [value]="medico.nome">
+                        *ngFor="let local of locais"
+                        [ngValue]="local.id">
 
-                        {{ medico.nome }}
-                        <span *ngIf="medico.especialidade">
-                            — {{ medico.especialidade }}
-                        </span>
+                        {{ local.nomeUnidade }} — {{ local.cidadeLocal }}/{{ local.estadoLocal }}
 
                     </option>
 
                 </select>
 
-                <p class="campo-erro" *ngIf="medicos.length === 0">
-                    Nenhum médico cadastrado. Cadastre um médico antes de agendar.
+                <p class="campo-erro" *ngIf="locais.length === 0">
+                    Nenhum local cadastrado. Cadastre um local em Configurações antes de agendar.
                 </p>
 
             </div>
@@ -461,26 +469,14 @@
 
             </div>
 
-            <div class="campo">
-
-                <label for="ag-local">Local</label>
-
-                <input
-                    id="ag-local"
-                    type="text"
-                    placeholder="Ex.: Junta de Serviço Militar — Osasco"
-                    [(ngModel)]="local"
-                    required>
-
-            </div>
-
         </div>
 
         <ng-container rodape>
 
             <app-button
                 variante="primario"
-                [desabilitado]="medicos.length === 0"
+                [desabilitado]="locais.length === 0"
+                [carregando]="salvando"
                 (acionar)="confirmarAgendamento()">
 
                 Confirmar agendamento

@@ -4,6 +4,8 @@
     Cadastre, edite e remova médicos do sistema.
 </p>
 
+<p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
 <div class="formulario">
 
     <div class="campo">
@@ -32,6 +34,8 @@
 
         <input
             type="password"
+            [disabled]="editando"
+            [placeholder]="editando ? 'A senha não é alterada na edição' : ''"
             [(ngModel)]="medico.senha">
 
     </div>
@@ -66,9 +70,18 @@
 
     </div>
 
-    <button (click)="salvar()">
+    <button (click)="salvar()" [disabled]="salvando">
 
         {{ editando ? 'Atualizar Médico' : 'Cadastrar Médico' }}
+
+    </button>
+
+    <button
+        *ngIf="editando"
+        class="btn-cancelar"
+        (click)="limparFormulario()">
+
+        Cancelar edição
 
     </button>
 

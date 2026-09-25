@@ -2,11 +2,7 @@
 
 <div
     class="status"
-    [ngClass]="{
-        'aprovado': situacao === 'Aprovado',
-        'reprovado': situacao === 'Reprovado',
-        'analise': situacao === 'Em análise' || situacao === 'Avaliação Médica Agendada'
-    }">
+    [ngClass]="classeSituacao">
 
     <h2>{{ situacao.toUpperCase() }}</h2>
 

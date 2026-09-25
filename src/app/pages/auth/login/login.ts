@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -22,6 +22,7 @@ export class Login {
 
   private auth = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   login = {
     email: '',
@@ -32,7 +33,7 @@ export class Login {
 
   carregando = false;
 
-  entrar(): void {
+  async entrar(): Promise<void> {
 
     this.erro = '';
 
@@ -46,24 +47,30 @@ export class Login {
 
     this.carregando = true;
 
-    const destino = this.auth.entrar(
-      this.login.email,
-      this.login.senha
-    );
+    try {
 
-    this.carregando = false;
+      const destino = await this.auth.entrar(
+        this.login.email,
+        this.login.senha
+      );
 
-    if (!destino) {
+      await this.router.navigateByUrl(destino);
 
-      this.erro = 'E-mail ou senha inválidos.';
+    } catch (erro) {
+
+      this.erro = erro instanceof Error
+        ? erro.message
+        : 'E-mail ou senha inválidos.';
 
       this.login.senha = '';
 
-      return;
+    } finally {
+
+      this.carregando = false;
+
+      this.cdr.markForCheck();
 
     }
-
-    this.router.navigate([destino]);
 
   }
 

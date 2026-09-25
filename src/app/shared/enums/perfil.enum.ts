@@ -9,6 +9,7 @@ export enum StatusAlistamento {
   AGUARDANDO_DOCUMENTOS = 'Aguardando documentos',
   EM_ANALISE = 'Em análise',
   DOCUMENTOS_APROVADOS = 'Documentos aprovados',
+  DOCUMENTOS_REPROVADOS = 'Documentos reprovados',
   AVALIACAO_AGENDADA = 'Avaliação médica agendada',
   AVALIACAO_CONCLUIDA = 'Avaliação médica concluída',
   APROVADO = 'Aprovado',
@@ -16,6 +17,7 @@ export enum StatusAlistamento {
 }
 
 export enum StatusDocumento {
+  PENDENTE = 'Pendente',
   EM_ANALISE = 'Em análise',
   APROVADO = 'Aprovado',
   REPROVADO = 'Reprovado'

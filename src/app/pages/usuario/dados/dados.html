@@ -1,5 +1,7 @@
 <h1>Meus Dados</h1>
 
+<p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
 <div class="card">
 
     <div class="campo">
@@ -93,8 +95,8 @@
     </div>
 
     <div class="campo">
-        <label>Voluntário</label>
-        <span>{{ usuario.voluntario ? 'Sim' : 'Não' }}</span>
+        <label>Local de Nascimento</label>
+        <span>{{ usuario.localNascimento || '-' }}</span>
     </div>
 
 </div>

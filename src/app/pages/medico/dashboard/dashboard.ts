@@ -1,6 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+
+import { AuthService } from '../../../services/auth';
+import { mensagemErro } from '../../../services/api.service';
+import { AgendamentoView, CidadaoView, ProcessoService } from '../../../services/processo.service';
+
+interface Paciente {
+  nome: string;
+  cpf: string;
+  agendamento: AgendamentoView;
+  idAlistamento: number;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -11,9 +22,12 @@ import { Router } from '@angular/router';
 })
 export class Dashboard implements OnInit {
 
-  usuarios: any[] = [];
+  private router = inject(Router);
+  private auth = inject(AuthService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  medico: any = {};
+  medico = { nome: '' };
 
   avaliacoesHoje = 0;
 
@@ -21,73 +35,82 @@ export class Dashboard implements OnInit {
 
   finalizadas = 0;
 
-  pacientesHoje: any[] = [];
+  pacientesHoje: Paciente[] = [];
 
-  constructor(
-    private router: Router
-  ) {}
+  erro = '';
 
   ngOnInit(): void {
 
-    this.medico = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
+    this.medico.nome = this.auth.usuarioAtual()?.nome ?? '';
 
     this.carregarPacientes();
 
   }
 
-  carregarPacientes() {
+  async carregarPacientes(): Promise<void> {
 
-    this.usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+    const idMedico = this.auth.usuarioAtual()?.id;
 
-    this.avaliacoesHoje = 0;
-    this.pendentes = 0;
-    this.finalizadas = 0;
-    this.pacientesHoje = [];
+    try {
 
-    this.usuarios.forEach(usuario => {
+      const processos = await this.processoService.carregarTodos();
 
-      if (
-        usuario.agendamento &&
-        (
-          usuario.agendamento.status === 'Agendado' ||
-          usuario.agendamento.status === 'Confirmado'
-        ) &&
-        usuario.agendamento.medico === this.medico.nome
-      ) {
+      this.avaliacoesHoje = 0;
+      this.pendentes = 0;
+      this.finalizadas = 0;
+      this.pacientesHoje = [];
+
+      processos.forEach(processo => {
+
+        if (!processo.agendamento || !processo.alistamento) {
+          return;
+        }
 
         this.avaliacoesHoje++;
 
-        if (usuario.avaliacao) {
+        if (processo.avaliacao) {
 
-          this.finalizadas++;
+          if (processo.avaliacao.medicoResponseDTO?.id === idMedico) {
+            this.finalizadas++;
+          }
 
-        } else {
-
-          this.pendentes++;
-          this.pacientesHoje.push(usuario);
+          return;
 
         }
 
-      }
+        const view: CidadaoView = this.processoService.paraView(processo);
 
-    });
+        this.pendentes++;
+
+        this.pacientesHoje.push({
+          nome: view.nome,
+          cpf: view.cpf,
+          agendamento: view.agendamento as AgendamentoView,
+          idAlistamento: processo.alistamento.id
+        });
+
+      });
+
+      this.erro = '';
+
+    } catch (erro) {
+
+      this.erro = mensagemErro(erro, 'Não foi possível carregar os pacientes.');
+
+    } finally {
+
+      this.cdr.markForCheck();
+
+    }
 
   }
 
-  avaliar(usuario: any): void {
+  avaliar(paciente: Paciente): void {
 
-    localStorage.setItem(
-      'pacienteSelecionado',
-      usuario.email
+    this.router.navigate(
+      ['/medico/avaliacao'],
+      { queryParams: { alistamento: paciente.idAlistamento } }
     );
-
-    this.router.navigate([
-      '/medico/avaliacao'
-    ]);
 
   }
 

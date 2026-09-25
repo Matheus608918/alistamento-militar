@@ -1,5 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { ApiService, mensagemErro } from '../../../services/api.service';
+import { Processo, ProcessoService } from '../../../services/processo.service';
+import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
+
+interface LinhaAgendamento {
+  id: number;
+  usuario: string;
+  cpf: string;
+  data: string;
+  horario: string;
+  local: string;
+  medico: string;
+  status: string;
+  processo: Processo;
+}
 
 @Component({
   selector: 'app-agendamentos',
@@ -10,85 +26,90 @@ import { CommonModule } from '@angular/common';
 })
 export class Agendamentos implements OnInit {
 
-  usuarios: any[] = [];
+  private api = inject(ApiService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  agendamentos: any[] = [];
+  agendamentos: LinhaAgendamento[] = [];
+
+  erro = '';
 
   ngOnInit(): void {
     this.carregarAgendamentos();
   }
 
-  carregarAgendamentos() {
+  async carregarAgendamentos(): Promise<void> {
 
-    this.usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+    try {
 
-    this.agendamentos = [];
+      const processos = await this.processoService.carregarTodos();
 
-    this.usuarios.forEach((usuario: any, usuarioIndex: number) => {
+      this.agendamentos = [];
 
-      if (usuario.agendamento) {
+      processos.forEach(processo => {
 
-        this.agendamentos.push({
+        const view = this.processoService.paraView(processo);
 
-          usuario: usuario.nome,
+        if (view.agendamento) {
 
-          cpf: usuario.cpf,
+          this.agendamentos.push({
+            id: view.agendamento.id,
+            usuario: view.nome,
+            cpf: view.cpf,
+            data: view.agendamento.data,
+            horario: view.agendamento.horario,
+            local: view.agendamento.local,
+            medico: view.agendamento.medico || '-',
+            status: view.agendamento.status,
+            processo
+          });
 
-          data: usuario.agendamento.data,
+        }
 
-          horario: usuario.agendamento.horario,
+      });
 
-          local: usuario.agendamento.local,
+      this.erro = '';
 
-          medico: usuario.agendamento.medico,
+    } catch (erro) {
 
-          status: usuario.agendamento.status,
+      this.erro = mensagemErro(erro, 'Não foi possível carregar os agendamentos.');
 
-          usuarioIndex
+    } finally {
 
-        });
-
-      }
-
-    });
-
-  }
-
-  alterarStatus(agendamento: any, status: string) {
-
-    agendamento.status = status;
-
-    this.usuarios[
-      agendamento.usuarioIndex
-    ].agendamento.status = status;
-
-    localStorage.setItem(
-      'usuarios',
-      JSON.stringify(this.usuarios)
-    );
-
-    const usuarioLogado = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
-
-    if (
-      usuarioLogado.email ===
-      this.usuarios[agendamento.usuarioIndex].email
-    ) {
-
-      const { senha, ...semSenha } =
-        this.usuarios[agendamento.usuarioIndex];
-
-      localStorage.setItem(
-        'usuarioLogado',
-        JSON.stringify(semSenha)
-      );
+      this.cdr.markForCheck();
 
     }
 
-    alert('Status do agendamento atualizado com sucesso.');
+  }
+
+  async cancelar(agendamento: LinhaAgendamento): Promise<void> {
+
+    if (!confirm(`Cancelar o agendamento de ${agendamento.usuario}?`)) {
+      return;
+    }
+
+    try {
+
+      await this.api.excluirAgendamento(agendamento.id);
+
+      const alistamento = agendamento.processo.alistamento;
+
+      if (alistamento) {
+        await this.processoService.atualizarStatus(
+          alistamento.id,
+          StatusAlistamento.DOCUMENTOS_APROVADOS
+        );
+      }
+
+      alert('Agendamento cancelado. O cidadão pode ser reagendado na tela de Cidadãos.');
+
+      await this.carregarAgendamentos();
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível cancelar o agendamento.'));
+
+    }
 
   }
 

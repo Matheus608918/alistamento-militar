@@ -1,5 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { ApiService, mensagemErro } from '../../../services/api.service';
+import { AgendamentoView, CidadaoView, ProcessoService } from '../../../services/processo.service';
+import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
+
+interface LinhaAgendamento {
+  nome: string;
+  agendamento: AgendamentoView;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -10,11 +19,14 @@ import { CommonModule } from '@angular/common';
 })
 export class Dashboard implements OnInit {
 
-  usuarios: any[] = [];
-  medicos: any[] = [];
+  private api = inject(ApiService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  ultimosUsuarios: any[] = [];
-  ultimosAgendamentos: any[] = [];
+  usuarios: CidadaoView[] = [];
+
+  ultimosUsuarios: CidadaoView[] = [];
+  ultimosAgendamentos: LinhaAgendamento[] = [];
 
   totalUsuarios = 0;
   totalMedicos = 0;
@@ -26,75 +38,85 @@ export class Dashboard implements OnInit {
   reprovados = 0;
   emAnalise = 0;
 
+  erro = '';
+
   ngOnInit(): void {
     this.carregarInformacoes();
   }
 
-  carregarInformacoes(): void {
+  async carregarInformacoes(): Promise<void> {
 
-    const todosUsuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+    try {
 
-    this.usuarios = todosUsuarios.filter(
-      (usuario: any) => usuario.tipo === 'cidadao'
-    );
+      const [processos, medicos] = await Promise.all([
+        this.processoService.carregarTodos(),
+        this.api.listarMedicos()
+      ]);
 
-    this.medicos = JSON.parse(
-      localStorage.getItem('medicos') || '[]'
-    );
+      this.usuarios = processos.map(p => this.processoService.paraView(p));
 
-    this.totalUsuarios = this.usuarios.length;
-    this.totalMedicos = this.medicos.length;
+      this.totalUsuarios = this.usuarios.length;
+      this.totalMedicos = medicos.length;
 
-    this.totalDocumentos = 0;
-    this.totalAgendamentos = 0;
-    this.totalAvaliacoes = 0;
+      this.totalDocumentos = 0;
+      this.totalAgendamentos = 0;
+      this.totalAvaliacoes = 0;
 
-    this.aprovados = 0;
-    this.reprovados = 0;
-    this.emAnalise = 0;
+      this.aprovados = 0;
+      this.reprovados = 0;
+      this.emAnalise = 0;
 
-    this.usuarios.forEach(usuario => {
+      this.usuarios.forEach(usuario => {
 
-      if (usuario.documentos) {
         this.totalDocumentos += usuario.documentos.length;
-      }
 
-      if (usuario.agendamento) {
-        this.totalAgendamentos++;
-      }
+        if (usuario.agendamento) {
+          this.totalAgendamentos++;
+        }
 
-      if (usuario.avaliacao) {
-        this.totalAvaliacoes++;
-      }
+        if (usuario.avaliacao) {
+          this.totalAvaliacoes++;
+        }
 
-      switch (usuario.status) {
+        switch (usuario.status) {
 
-        case 'Aprovado':
-          this.aprovados++;
-          break;
+          case StatusAlistamento.APROVADO:
+            this.aprovados++;
+            break;
 
-        case 'Reprovado':
-          this.reprovados++;
-          break;
+          case StatusAlistamento.REPROVADO:
+            this.reprovados++;
+            break;
 
-        default:
-          this.emAnalise++;
-          break;
+          default:
+            this.emAnalise++;
+            break;
 
-      }
+        }
 
-    });
+      });
 
-    this.ultimosUsuarios = [...this.usuarios]
-      .reverse()
-      .slice(0, 5);
+      this.ultimosUsuarios = [...this.usuarios]
+        .reverse()
+        .slice(0, 5);
 
-    this.ultimosAgendamentos = this.usuarios
-      .filter(usuario => usuario.agendamento)
-      .reverse()
-      .slice(0, 5);
+      this.ultimosAgendamentos = this.usuarios
+        .filter(usuario => usuario.agendamento)
+        .map(usuario => ({ nome: usuario.nome, agendamento: usuario.agendamento as AgendamentoView }))
+        .reverse()
+        .slice(0, 5);
+
+      this.erro = '';
+
+    } catch (erro) {
+
+      this.erro = mensagemErro(erro, 'Não foi possível carregar o painel.');
+
+    } finally {
+
+      this.cdr.markForCheck();
+
+    }
 
   }
 

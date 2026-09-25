@@ -2,7 +2,10 @@
 
 <p>
     Visualize todos os documentos enviados pelos cidadãos.
+    A aprovação ou reprovação vale para toda a documentação do cidadão.
 </p>
+
+<p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
 
 <table>
 
@@ -13,6 +16,7 @@
             <th>Cidadão</th>
             <th>CPF</th>
             <th>Tipo</th>
+            <th>Número</th>
             <th>Arquivo</th>
             <th>Data de Envio</th>
             <th>Status</th>
@@ -26,7 +30,7 @@
 
         <tr *ngIf="documentos.length === 0">
 
-            <td colspan="7" style="text-align:center">
+            <td colspan="8" style="text-align:center">
 
                 Nenhum documento encontrado.
 
@@ -41,6 +45,8 @@
             <td>{{ documento.cpf }}</td>
 
             <td>{{ documento.tipo }}</td>
+
+            <td>{{ documento.numero }}</td>
 
             <td>{{ documento.nomeArquivo }}</td>
 
@@ -62,7 +68,7 @@
 
                     <button
                         class="btn-reprovar"
-                        (click)="alterarStatus(documento, 'Rejeitado')">
+                        (click)="alterarStatus(documento, 'Reprovado')">
 
                         Rejeitar
 

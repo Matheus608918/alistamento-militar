@@ -50,6 +50,36 @@
           </div>
 
           <div class="form-group">
+            <label>Local de Nascimento</label>
+            <input type="text" formControlName="localNascimento" placeholder="Cidade/UF">
+          </div>
+
+          <div class="form-group">
+            <label>Estado Civil</label>
+            <select formControlName="estadoCivil">
+              <option value="">Selecione</option>
+              <option value="Solteiro">Solteiro</option>
+              <option value="Casado">Casado</option>
+              <option value="Divorciado">Divorciado</option>
+              <option value="Viúvo">Viúvo</option>
+              <option value="União estável">União estável</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Escolaridade</label>
+            <select formControlName="escolaridade">
+              <option value="">Selecione</option>
+              <option value="Fundamental incompleto">Fundamental incompleto</option>
+              <option value="Fundamental completo">Fundamental completo</option>
+              <option value="Médio incompleto">Médio incompleto</option>
+              <option value="Médio completo">Médio completo</option>
+              <option value="Superior incompleto">Superior incompleto</option>
+              <option value="Superior completo">Superior completo</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>Telefone</label>
             <input type="text" formControlName="telefone">
           </div>
@@ -81,7 +111,7 @@
 
           <div class="form-group">
             <label>Número</label>
-            <input type="text" formControlName="numero">
+            <input type="text" formControlName="numero" maxlength="10">
           </div>
 
           <div class="form-group">
@@ -96,7 +126,7 @@
 
           <div class="form-group">
             <label>UF</label>
-            <input type="text" formControlName="uf">
+            <input type="text" formControlName="uf" maxlength="2">
           </div>
 
         </div>
@@ -121,20 +151,15 @@
 
         </div>
 
-        <div class="checkbox-group">
-
-          <label>
-            <input type="checkbox" formControlName="voluntario">
-            Desejo me voluntariar para o Serviço Militar.
-          </label>
-
-        </div>
-
       </section>
 
-      <button type="submit">
-        Finalizar Cadastro
+      <button type="submit" [disabled]="enviando">
+        {{ enviando ? 'Enviando...' : 'Finalizar Cadastro' }}
       </button>
+
+      <p class="voltar">
+        <a routerLink="/cadastro">Voltar para a etapa 1</a>
+      </p>
 
     </form>
 

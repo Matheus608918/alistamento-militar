@@ -1,1 +1,169 @@
-<p>configuracoes works!</p>
+<h1>Configurações</h1>
+
+<p class="subtitulo">
+    Cadastros básicos necessários para o funcionamento do sistema.
+</p>
+
+<p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
+<section class="bloco">
+
+    <h2>Locais de avaliação</h2>
+
+    <p class="dica">
+        Obrigatório para agendar a avaliação médica dos cidadãos.
+    </p>
+
+    <div class="grade">
+
+        <div class="campo">
+            <label for="local-nome">Nome da unidade</label>
+            <input id="local-nome" type="text" maxlength="100" [(ngModel)]="local.nomeUnidade">
+        </div>
+
+        <div class="campo">
+            <label for="local-endereco">Endereço</label>
+            <input id="local-endereco" type="text" maxlength="150" [(ngModel)]="local.enderecoLocal">
+        </div>
+
+        <div class="campo">
+            <label for="local-cidade">Cidade</label>
+            <input id="local-cidade" type="text" maxlength="100" [(ngModel)]="local.cidadeLocal">
+        </div>
+
+        <div class="campo">
+            <label for="local-estado">Estado</label>
+            <input id="local-estado" type="text" maxlength="50" placeholder="SP" [(ngModel)]="local.estadoLocal">
+        </div>
+
+        <div class="campo">
+            <label for="local-cep">CEP</label>
+            <input id="local-cep" type="text" maxlength="10" placeholder="00000-000" [(ngModel)]="local.cepLocal">
+        </div>
+
+    </div>
+
+    <div class="acoes-form">
+
+        <button (click)="salvarLocal()">
+            {{ idLocalEdicao !== null ? 'Atualizar local' : 'Cadastrar local' }}
+        </button>
+
+        <button
+            *ngIf="idLocalEdicao !== null"
+            class="btn-secundario"
+            (click)="cancelarLocal()">
+            Cancelar edição
+        </button>
+
+    </div>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Unidade</th>
+                <th>Endereço</th>
+                <th>Cidade/UF</th>
+                <th>CEP</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr *ngIf="locais.length === 0">
+                <td colspan="5" class="vazio">Nenhum local cadastrado.</td>
+            </tr>
+
+            <tr *ngFor="let l of locais">
+                <td>{{ l.nomeUnidade }}</td>
+                <td>{{ l.enderecoLocal }}</td>
+                <td>{{ l.cidadeLocal }}/{{ l.estadoLocal }}</td>
+                <td>{{ l.cepLocal }}</td>
+                <td>
+                    <button class="btn-editar" (click)="editarLocal(l)">Editar</button>
+                    <button class="btn-excluir" (click)="excluirLocal(l)">Excluir</button>
+                </td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<section class="bloco">
+
+    <h2>Tipos de documento</h2>
+
+    <p class="dica">
+        Obrigatório para que o cidadão consiga enviar documentos.
+    </p>
+
+    <div class="grade">
+
+        <div class="campo">
+            <label for="tipo-nome">Nome</label>
+            <input id="tipo-nome" type="text" maxlength="100" [(ngModel)]="tipo.nomeTipo">
+        </div>
+
+        <div class="campo">
+            <label for="tipo-descricao">Descrição (opcional)</label>
+            <input id="tipo-descricao" type="text" [(ngModel)]="tipo.descricao">
+        </div>
+
+    </div>
+
+    <div class="acoes-form">
+
+        <button (click)="salvarTipo()">
+            {{ idTipoEdicao !== null ? 'Atualizar tipo' : 'Cadastrar tipo' }}
+        </button>
+
+        <button
+            *ngIf="idTipoEdicao !== null"
+            class="btn-secundario"
+            (click)="cancelarTipo()">
+            Cancelar edição
+        </button>
+
+        <button
+            *ngIf="idTipoEdicao === null"
+            class="btn-secundario"
+            (click)="criarTiposPadrao()">
+            Criar tipos padrão
+        </button>
+
+    </div>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr *ngIf="tipos.length === 0">
+                <td colspan="3" class="vazio">Nenhum tipo de documento cadastrado.</td>
+            </tr>
+
+            <tr *ngFor="let t of tipos">
+                <td>{{ t.nomeTipo }}</td>
+                <td>{{ t.descricao || '-' }}</td>
+                <td>
+                    <button class="btn-editar" (click)="editarTipo(t)">Editar</button>
+                    <button class="btn-excluir" (click)="excluirTipo(t)">Excluir</button>
+                </td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</section>

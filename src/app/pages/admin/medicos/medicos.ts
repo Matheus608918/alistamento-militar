@@ -1,9 +1,18 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { AuthService } from '../../../services/auth';
-import { Perfil } from '../../../shared/enums/perfil.enum';
+import { ApiService, mensagemErro } from '../../../services/api.service';
+import { MedicoRequest } from '../../../models/api.models';
+
+interface MedicoView {
+  id: number;
+  nome: string;
+  email: string;
+  crm: string;
+  especialidade: string;
+  telefone: string;
+}
 
 @Component({
   selector: 'app-medicos',
@@ -17,9 +26,10 @@ import { Perfil } from '../../../shared/enums/perfil.enum';
 })
 export class Medicos implements OnInit {
 
-  private auth = inject(AuthService);
+  private api = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
-  medicos: any[] = [];
+  medicos: MedicoView[] = [];
 
   medico = {
     nome: '',
@@ -32,28 +42,51 @@ export class Medicos implements OnInit {
 
   editando = false;
 
-  indiceEdicao = -1;
+  idEdicao: number | null = null;
 
-  emailOriginal = '';
+  salvando = false;
+
+  erro = '';
 
   ngOnInit(): void {
     this.carregarMedicos();
   }
 
-  carregarMedicos() {
+  async carregarMedicos(): Promise<void> {
 
-    this.medicos = JSON.parse(
-      localStorage.getItem('medicos') || '[]'
-    );
+    try {
+
+      const lista = await this.api.listarMedicos();
+
+      this.medicos = lista.map(m => ({
+        id: m.id,
+        nome: m.nomeMedico,
+        email: m.emailMedico ?? '',
+        crm: m.crm,
+        especialidade: m.especialidade ?? '',
+        telefone: m.telefoneMedico ?? ''
+      }));
+
+      this.erro = '';
+
+    } catch (erro) {
+
+      this.erro = mensagemErro(erro, 'Não foi possível carregar os médicos.');
+
+    } finally {
+
+      this.cdr.markForCheck();
+
+    }
 
   }
 
-  salvar() {
+  async salvar(): Promise<void> {
 
     if (
       !this.medico.nome ||
       !this.medico.email ||
-      !this.medico.senha ||
+      (!this.editando && !this.medico.senha) ||
       !this.medico.crm ||
       !this.medico.especialidade ||
       !this.medico.telefone
@@ -64,118 +97,88 @@ export class Medicos implements OnInit {
 
     }
 
-    if (this.editando) {
+    const dto: MedicoRequest = {
+      nomeMedico: this.medico.nome.trim(),
+      emailMedico: this.medico.email.trim(),
+      crm: this.medico.crm.trim(),
+      especialidade: this.medico.especialidade.trim(),
+      telefoneMedico: this.medico.telefone.trim()
+    };
 
-      this.medicos[this.indiceEdicao] = {
-        ...this.medico,
-        senha: undefined
-      };
+    this.salvando = true;
+    this.cdr.markForCheck();
 
-      let usuarios = JSON.parse(
-        localStorage.getItem('usuarios') || '[]'
-      );
+    try {
 
-      const indiceUsuario = usuarios.findIndex(
-        (u: any) => u.email === this.emailOriginal
-      );
+      if (this.editando && this.idEdicao !== null) {
 
-      if (indiceUsuario !== -1) {
+        await this.api.atualizarMedico(this.idEdicao, dto);
 
-        usuarios[indiceUsuario] = {
-          ...this.medico,
-          senha: this.auth.criarHashSenha(this.medico.senha),
-          tipo: Perfil.MEDICO
-        };
+        alert('Médico atualizado com sucesso.');
+
+      } else {
+
+        await this.api.cadastrarMedico({ ...dto, senhaMedico: this.medico.senha });
+
+        alert('Médico cadastrado com sucesso.');
 
       }
 
-      localStorage.setItem(
-        'usuarios',
-        JSON.stringify(usuarios)
-      );
+      this.limparFormulario();
 
-      alert('Médico atualizado com sucesso.');
+      await this.carregarMedicos();
 
-    } else {
+    } catch (erro) {
 
-      this.medicos.push({
-        ...this.medico,
-        senha: undefined
-      });
+      alert(mensagemErro(erro, 'Não foi possível salvar o médico. Verifique se o CRM já não está cadastrado.'));
 
-      let usuarios = JSON.parse(
-        localStorage.getItem('usuarios') || '[]'
-      );
+    } finally {
 
-      usuarios.push({
-        ...this.medico,
-        senha: this.auth.criarHashSenha(this.medico.senha),
-        tipo: Perfil.MEDICO
-      });
-
-      localStorage.setItem(
-        'usuarios',
-        JSON.stringify(usuarios)
-      );
-
-      alert('Médico cadastrado com sucesso.');
+      this.salvando = false;
+      this.cdr.markForCheck();
 
     }
-
-    localStorage.setItem(
-      'medicos',
-      JSON.stringify(this.medicos)
-    );
-
-    this.limparFormulario();
-
-    this.carregarMedicos();
 
   }
 
   editar(indice: number) {
 
+    const selecionado = this.medicos[indice];
+
     this.editando = true;
 
-    this.indiceEdicao = indice;
-
-    this.emailOriginal = this.medicos[indice].email;
+    this.idEdicao = selecionado.id;
 
     this.medico = {
-      ...this.medicos[indice]
+      nome: selecionado.nome,
+      email: selecionado.email,
+      senha: '',
+      crm: selecionado.crm,
+      especialidade: selecionado.especialidade,
+      telefone: selecionado.telefone
     };
 
   }
 
-  excluir(indice: number) {
+  async excluir(indice: number): Promise<void> {
 
-    if (!confirm('Deseja excluir este médico?')) {
+    const selecionado = this.medicos[indice];
+
+    if (!confirm(`Deseja excluir o médico ${selecionado.nome}?`)) {
       return;
     }
 
-    const email = this.medicos[indice].email;
+    try {
 
-    this.medicos.splice(indice, 1);
+      await this.api.excluirMedico(selecionado.id);
 
-    localStorage.setItem(
-      'medicos',
-      JSON.stringify(this.medicos)
-    );
+      await this.carregarMedicos();
 
-    let usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+    } catch (erro) {
 
-    usuarios = usuarios.filter(
-      (u: any) => u.email !== email
-    );
+      alert(mensagemErro(erro, 'Não foi possível excluir. O médico pode ter avaliações registradas.'));
 
-    localStorage.setItem(
-      'usuarios',
-      JSON.stringify(usuarios)
-    );
-
-    this.carregarMedicos();
+    }
 
   }
 
@@ -192,9 +195,7 @@ export class Medicos implements OnInit {
 
     this.editando = false;
 
-    this.indiceEdicao = -1;
-
-    this.emailOriginal = '';
+    this.idEdicao = null;
 
   }
 

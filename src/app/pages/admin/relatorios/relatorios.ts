@@ -1,5 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { ApiService } from '../../../services/api.service';
+import { ProcessoService } from '../../../services/processo.service';
+import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
 
 @Component({
   selector: 'app-relatorios',
@@ -12,8 +16,9 @@ import { CommonModule } from '@angular/common';
 })
 export class Relatorios implements OnInit {
 
-  usuarios: any[] = [];
-  medicos: any[] = [];
+  private api = inject(ApiService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
   totalUsuarios = 0;
   totalMedicos = 0;
@@ -29,63 +34,65 @@ export class Relatorios implements OnInit {
     this.carregarRelatorio();
   }
 
-  carregarRelatorio(): void {
+  async carregarRelatorio(): Promise<void> {
 
-    const todosUsuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+    try {
 
-    // Apenas cidadãos
-    this.usuarios = todosUsuarios.filter(
-      (usuario: any) => usuario.tipo === 'cidadao'
-    );
+      const [processos, medicos] = await Promise.all([
+        this.processoService.carregarTodos(),
+        this.api.listarMedicos()
+      ]);
 
-    this.medicos = JSON.parse(
-      localStorage.getItem('medicos') || '[]'
-    );
+      this.totalUsuarios = processos.length;
+      this.totalMedicos = medicos.length;
 
-    this.totalUsuarios = this.usuarios.length;
-    this.totalMedicos = this.medicos.length;
+      this.totalDocumentos = 0;
+      this.totalAgendamentos = 0;
+      this.totalAvaliacoes = 0;
 
-    this.totalDocumentos = 0;
-    this.totalAgendamentos = 0;
-    this.totalAvaliacoes = 0;
+      this.aprovados = 0;
+      this.reprovados = 0;
+      this.emAnalise = 0;
 
-    this.aprovados = 0;
-    this.reprovados = 0;
-    this.emAnalise = 0;
+      processos.forEach(processo => {
 
-    this.usuarios.forEach(usuario => {
+        this.totalDocumentos += processo.documentos.length;
 
-      if (usuario.documentos) {
-        this.totalDocumentos += usuario.documentos.length;
-      }
+        if (processo.agendamento) {
+          this.totalAgendamentos++;
+        }
 
-      if (usuario.agendamento) {
-        this.totalAgendamentos++;
-      }
+        if (processo.avaliacao) {
+          this.totalAvaliacoes++;
+        }
 
-      if (usuario.avaliacao) {
-        this.totalAvaliacoes++;
-      }
+        switch (processo.status) {
 
-      switch (usuario.status) {
+          case StatusAlistamento.APROVADO:
+            this.aprovados++;
+            break;
 
-        case 'Aprovado':
-          this.aprovados++;
-          break;
+          case StatusAlistamento.REPROVADO:
+            this.reprovados++;
+            break;
 
-        case 'Reprovado':
-          this.reprovados++;
-          break;
+          default:
+            this.emAnalise++;
+            break;
 
-        default:
-          this.emAnalise++;
-          break;
+        }
 
-      }
+      });
 
-    });
+    } catch (erro) {
+
+      console.error(erro);
+
+    } finally {
+
+      this.cdr.markForCheck();
+
+    }
 
   }
 

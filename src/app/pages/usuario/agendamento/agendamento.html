@@ -2,6 +2,8 @@
 
     <h1>Agendamento da Avaliação Médica</h1>
 
+    <p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
     <ng-container *ngIf="agendamento; else semAgendamento">
 
         <p>
@@ -43,6 +45,17 @@
 
         <div class="info">
 
+            <label>Endereço</label>
+
+            <input
+                type="text"
+                [value]="agendamento.endereco"
+                readonly>
+
+        </div>
+
+        <div class="info" *ngIf="agendamento.medico">
+
             <label>Médico Responsável</label>
 
             <input
@@ -63,27 +76,11 @@
 
         </div>
 
-        <button
-            *ngIf="!confirmado"
-            (click)="confirmarPresenca()">
-
-            Confirmar Presença
-
-        </button>
-
-        <button
-            *ngIf="confirmado"
-            disabled>
-
-            Presença Confirmada
-
-        </button>
-
     </ng-container>
 
     <ng-template #semAgendamento>
 
-        <div class="sem-agendamento">
+        <div class="sem-agendamento" *ngIf="!erro">
 
             <h2>Nenhuma avaliação agendada</h2>
 

@@ -1,5 +1,7 @@
 <h1>Avaliação Médica</h1>
 
+<p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
 <div *ngIf="paciente; else semPaciente">
 
     <div class="card">
@@ -48,7 +50,19 @@
 
     </div>
 
-    <div class="card">
+    <div class="card" *ngIf="paciente.avaliacao">
+
+        <h2>Avaliação já registrada</h2>
+
+        <p><strong>Resultado:</strong> {{ paciente.avaliacao.resultado }}</p>
+
+        <p><strong>Data:</strong> {{ paciente.avaliacao.data }}</p>
+
+        <p *ngIf="paciente.avaliacao.observacoes">{{ paciente.avaliacao.observacoes }}</p>
+
+    </div>
+
+    <div class="card" *ngIf="!paciente.avaliacao">
 
         <h2>Resultado da Avaliação</h2>
 
@@ -92,9 +106,9 @@
 
         </div>
 
-        <button (click)="salvar()">
+        <button (click)="salvar()" [disabled]="salvando">
 
-            Finalizar Avaliação
+            {{ salvando ? 'Salvando...' : 'Finalizar Avaliação' }}
 
         </button>
 

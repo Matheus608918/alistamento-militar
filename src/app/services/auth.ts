@@ -1,32 +1,26 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { Perfil } from '../shared/enums/perfil.enum';
-import { API_BASE_URL } from '../core/api-config';
+import { ApiService } from './api.service';
 
-interface SessaoUsuario {
+export interface SessaoUsuario {
   id: number;
   nome: string;
   email: string;
   tipo: Perfil;
-  telefone?: string;
+  telefone?: string | null;
   cpf?: string;
   crm?: string;
-  especialidade?: string;
+  especialidade?: string | null;
   dataNascimento?: string;
-}
-
-interface LoginResponse {
-  token: string;
-  role: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private http = inject(HttpClient);
+  private api = inject(ApiService);
   private router = inject(Router);
 
   private readonly CHAVE_TOKEN = 'authToken';
@@ -38,103 +32,151 @@ export class AuthService {
   readonly autenticado = computed(() => this._usuarioAtual() !== null);
   readonly perfil = computed(() => this._usuarioAtual()?.tipo ?? null);
 
-  private lerSessao(): SessaoUsuario | null {
-    try {
-      return JSON.parse(localStorage.getItem(this.CHAVE_SESSAO) || 'null');
-    } catch {
-      return null;
-    }
-  }
-
   get token(): string | null {
     return localStorage.getItem(this.CHAVE_TOKEN);
   }
 
-  private mapearPerfil(role: string): Perfil {
+  tokenValido(): boolean {
 
-    switch (role) {
-      case 'ADMIN': return Perfil.ADMIN;
-      case 'MEDICO': return Perfil.MEDICO;
-      default: return Perfil.CIDADAO;
+    const token = this.token;
+
+    if (!token) {
+      return false;
+    }
+
+    try {
+
+      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64)) as { exp?: number };
+
+      return !payload.exp || payload.exp * 1000 > Date.now();
+
+    } catch {
+
+      return false;
+
     }
 
   }
 
-  async entrar(email: string, senha: string): Promise<string | null> {
+  verificarSessao(): boolean {
+
+    if (this._usuarioAtual() && this.tokenValido()) {
+      return true;
+    }
+
+    this.limparSessao();
+
+    return false;
+
+  }
+
+  async entrar(email: string, senha: string): Promise<string> {
+
+    this.limparSessao();
+
+    const emailNormalizado = email.trim();
 
     try {
 
-      const resposta = await firstValueFrom(
-        this.http.post<LoginResponse>(`${API_BASE_URL}/auth/login`, { email, senha })
-      );
-
-      const perfil = this.mapearPerfil(resposta.role);
+      const resposta = await this.api.login(emailNormalizado, senha);
 
       localStorage.setItem(this.CHAVE_TOKEN, resposta.token);
 
-      const sessao = await this.buscarPerfilCompleto(perfil, email);
+    } catch (erro) {
+
+      if (erro instanceof HttpErrorResponse && erro.status === 0) {
+        throw new Error('Não foi possível conectar à API. Verifique se o back-end está rodando.');
+      }
+
+      throw new Error('E-mail ou senha inválidos.');
+
+    }
+
+    try {
+
+      const sessao = await this.identificarPerfil(emailNormalizado);
 
       localStorage.setItem(this.CHAVE_SESSAO, JSON.stringify(sessao));
       this._usuarioAtual.set(sessao);
 
-      return this.rotaInicial(perfil);
+      return this.rotaInicial(sessao.tipo);
 
-    } catch {
+    } catch (erro) {
 
-      return null;
+      this.limparSessao();
+
+      throw erro instanceof Error && !(erro instanceof HttpErrorResponse)
+        ? erro
+        : new Error('Login realizado, mas não foi possível carregar os dados do perfil.');
 
     }
 
   }
 
-  private async buscarPerfilCompleto(perfil: Perfil, email: string): Promise<SessaoUsuario> {
+  private async identificarPerfil(email: string): Promise<SessaoUsuario> {
 
-    switch (perfil) {
+    const alvo = email.toLowerCase();
 
-      case Perfil.MEDICO: {
+    const usuarios = await this.api.listarUsuarios();
+    const u = usuarios.find(x => x.email?.toLowerCase() === alvo);
 
-        const medicos = await firstValueFrom(this.http.get<any[]>(`${API_BASE_URL}/medico`));
-        const m = medicos.find(x => x.emailMedico === email);
-
-        return {
-          id: m.id, nome: m.nomeMedico, email: m.emailMedico, tipo: Perfil.MEDICO,
-          telefone: m.telefoneMedico, crm: m.crm, especialidade: m.especialidade
-        };
-
-      }
-
-      case Perfil.ADMIN: {
-
-        const admins = await firstValueFrom(this.http.get<any[]>(`${API_BASE_URL}/administrador`));
-        const a = admins.find(x => x.emailAdmin === email);
-
-        return { id: a.id, nome: a.nomeAdmin, email: a.emailAdmin, tipo: Perfil.ADMIN };
-
-      }
-
-      default: {
-
-        const usuarios = await firstValueFrom(this.http.get<any[]>(`${API_BASE_URL}/usuario`));
-        const u = usuarios.find(x => x.email === email);
-
-        return {
-          id: u.id, nome: u.nome, email: u.email, tipo: Perfil.CIDADAO,
-          telefone: u.telefone, cpf: u.cpf, dataNascimento: u.dataNascimento
-        };
-
-      }
-
+    if (u) {
+      return {
+        id: u.id,
+        nome: u.nome,
+        email: u.email,
+        tipo: Perfil.CIDADAO,
+        telefone: u.telefone,
+        cpf: u.cpf,
+        dataNascimento: u.dataNascimento
+      };
     }
+
+    const medicos = await this.api.listarMedicos();
+    const m = medicos.find(x => x.emailMedico?.toLowerCase() === alvo);
+
+    if (m) {
+      return {
+        id: m.id,
+        nome: m.nomeMedico,
+        email: m.emailMedico ?? email,
+        tipo: Perfil.MEDICO,
+        telefone: m.telefoneMedico,
+        crm: m.crm,
+        especialidade: m.especialidade
+      };
+    }
+
+    const admins = await this.api.listarAdministradores();
+    const a = admins.find(x => x.emailAdmin?.toLowerCase() === alvo);
+
+    if (a) {
+      return {
+        id: a.id,
+        nome: a.nomeAdmin,
+        email: a.emailAdmin,
+        tipo: Perfil.ADMIN
+      };
+    }
+
+    throw new Error('Perfil não encontrado para este e-mail.');
 
   }
 
   sair(): void {
 
+    this.limparSessao();
+    this.router.navigate(['/login']);
+
+  }
+
+  limparSessao(): void {
+
     localStorage.removeItem(this.CHAVE_TOKEN);
     localStorage.removeItem(this.CHAVE_SESSAO);
 
     this._usuarioAtual.set(null);
-    this.router.navigate(['/login']);
 
   }
 
@@ -157,5 +199,17 @@ export class AuthService {
   ehAdmin(): boolean { return this.temPerfil([Perfil.ADMIN]); }
   ehMedico(): boolean { return this.temPerfil([Perfil.MEDICO]); }
   ehCidadao(): boolean { return this.temPerfil([Perfil.CIDADAO]); }
+
+  private lerSessao(): SessaoUsuario | null {
+
+    try {
+      return localStorage.getItem(this.CHAVE_TOKEN)
+        ? JSON.parse(localStorage.getItem(this.CHAVE_SESSAO) || 'null')
+        : null;
+    } catch {
+      return null;
+    }
+
+  }
 
 }

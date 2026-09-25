@@ -1,0 +1,130 @@
+h1{
+    color:#2F5233;
+    margin-bottom:10px;
+}
+
+.subtitulo{
+    color:#666;
+    margin-bottom:24px;
+}
+
+.bloco{
+    background:#fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:30px;
+}
+
+.bloco h2{
+    color:#2F5233;
+    margin-bottom:6px;
+}
+
+.dica{
+    color:#777;
+    font-size:14px;
+    margin-bottom:18px;
+}
+
+.grade{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:0 18px;
+}
+
+.campo{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:16px;
+}
+
+.campo label{
+    margin-bottom:6px;
+    font-weight:bold;
+    color:#444;
+}
+
+.campo input{
+    padding:11px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+.acoes-form{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:22px;
+}
+
+button{
+    background:#2F5233;
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.btn-secundario{
+    background:#6c757d;
+}
+
+.btn-editar{
+    background:#ffc107;
+    color:#000;
+    margin-right:8px;
+}
+
+.btn-excluir{
+    background:#dc3545;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#2F5233;
+    color:#fff;
+    padding:12px;
+    text-align:left;
+}
+
+td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+}
+
+.vazio{
+    text-align:center;
+    color:#777;
+}
+
+.erro{
+    background:#fdecea;
+    color:#b71c1c;
+    padding:12px 16px;
+    border-radius:8px;
+    margin-bottom:16px;
+}
+
+@media(max-width:768px){
+
+    .bloco{
+        padding:18px;
+    }
+
+    table{
+        display:block;
+        overflow-x:auto;
+    }
+
+}

@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { Usuario } from '../../../models/usuario.model';
-import { UsuarioService } from '../../../services/usuario.service';
+import { AuthService } from '../../../services/auth';
+import { mensagemErro } from '../../../services/api.service';
+import { AgendamentoView, ProcessoService } from '../../../services/processo.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,9 +14,21 @@ import { UsuarioService } from '../../../services/usuario.service';
 })
 export class Dashboard implements OnInit {
 
-  usuario: Usuario = {} as Usuario;
+  private auth = inject(AuthService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
+
+  usuario = { nome: '' };
+
+  carregando = true;
+
+  erro = '';
 
   quantidadeDocumentos = 0;
+
+  statusDocumentos = 'Pendente';
+
+  statusAvaliacao = 'Pendente';
 
   status = 'Em análise';
 
@@ -23,62 +36,44 @@ export class Dashboard implements OnInit {
 
   dataCadastro = '';
 
-  agendamento: any = null;
+  agendamento: AgendamentoView | null = null;
 
-  constructor(
-    private usuarioService: UsuarioService
-  ) {}
+  async ngOnInit(): Promise<void> {
 
-  ngOnInit(): void {
+    const sessao = this.auth.usuarioAtual();
 
-    const usuario = this.usuarioService.buscarUsuarioLogado();
+    if (!sessao) {
+      return;
+    }
 
-    if (usuario) {
+    this.usuario.nome = sessao.nome;
 
-      this.usuario = usuario;
+    try {
 
-      this.quantidadeDocumentos =
-        usuario.documentos?.length || 0;
+      await this.processoService.garantirAlistamento(sessao.id);
 
-      this.status =
-        (usuario as any).status || 'Em análise';
+      const processo = await this.processoService.carregarDoUsuario(sessao.id);
+      const view = this.processoService.paraView(processo);
 
-      this.agendamento =
-        (usuario as any).agendamento || null;
+      this.usuario.nome = view.nome;
+      this.quantidadeDocumentos = view.documentos.length;
+      this.statusDocumentos = this.processoService.statusDocumentos(processo);
+      this.status = view.status;
+      this.proximaEtapa = this.processoService.proximaEtapa(view.status);
+      this.dataCadastro = view.dataCadastro;
+      this.agendamento = view.agendamento;
+      this.statusAvaliacao = view.avaliacao
+        ? 'Concluída'
+        : view.agendamento ? 'Agendada' : 'Pendente';
 
-      this.dataCadastro =
-        (usuario as any).dataCadastro ||
-        new Date().toLocaleDateString('pt-BR');
+    } catch (erro) {
 
-      switch (this.status) {
+      this.erro = mensagemErro(erro, 'Não foi possível carregar seu processo.');
 
-        case 'Aprovado':
+    } finally {
 
-          this.proximaEtapa =
-            'Aguardar convocação para incorporação.';
-
-          break;
-
-        case 'Reprovado':
-
-          this.proximaEtapa =
-            'Processo encerrado.';
-
-          break;
-
-        case 'Avaliação Médica Agendada':
-
-          this.proximaEtapa =
-            'Compareça na data e horário da avaliação médica.';
-
-          break;
-
-        default:
-
-          this.proximaEtapa =
-            'Aguardando análise da Junta Militar.';
-
-      }
+      this.carregando = false;
+      this.cdr.markForCheck();
 
     }
 

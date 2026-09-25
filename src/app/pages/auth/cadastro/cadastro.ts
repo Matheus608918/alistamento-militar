@@ -1,14 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
-import { Usuario } from '../../../models/usuario.model';
-import { UsuarioService } from '../../../services/usuario.service';
-import { AuthService } from '../../../services/auth';
-
-import { Perfil, StatusAlistamento } from '../../../shared/enums/perfil.enum';
+import { CadastroRascunhoService } from '../../../services/cadastro-rascunho.service';
 import { cpfValido } from '../../../shared/utils/validadores';
+
+interface FormularioCadastro {
+  nome: string;
+  cpf: string;
+  dataNascimento: string;
+  email: string;
+  telefone: string;
+  senha: string;
+  confirmarSenha: string;
+}
 
 @Component({
   selector: 'app-cadastro',
@@ -21,15 +27,12 @@ import { cpfValido } from '../../../shared/utils/validadores';
   templateUrl: './cadastro.html',
   styleUrl: './cadastro.css'
 })
-export class Cadastro {
+export class Cadastro implements OnInit {
 
-  constructor(
-    private router: Router,
-    private usuarioService: UsuarioService,
-    private auth: AuthService
-  ) {}
+  private router = inject(Router);
+  private rascunho = inject(CadastroRascunhoService);
 
-  usuario: Usuario = {
+  usuario: FormularioCadastro = {
     nome: '',
     cpf: '',
     dataNascimento: '',
@@ -38,6 +41,16 @@ export class Cadastro {
     senha: '',
     confirmarSenha: ''
   };
+
+  ngOnInit(): void {
+
+    const salvo = this.rascunho.obter();
+
+    if (salvo) {
+      this.usuario = { ...salvo, confirmarSenha: salvo.senha };
+    }
+
+  }
 
   validarCPF(cpf: string): boolean {
     return cpfValido(cpf);
@@ -100,45 +113,14 @@ export class Cadastro {
       return;
     }
 
-    const emailExiste = this.usuarioService.buscarPorEmail(this.usuario.email);
-
-    if (emailExiste) {
-      alert('Este e-mail já está cadastrado.');
-      return;
-    }
-
-    const cpfExiste = this.usuarioService.buscarPorCpf(cpf);
-
-    if (cpfExiste) {
-      alert('Este CPF já está cadastrado.');
-      return;
-    }
-
-    const novoUsuario: Usuario = {
-
-      ...this.usuario,
-
-      senha: this.auth.criarHashSenha(this.usuario.senha),
-
-      confirmarSenha: undefined,
-
+    this.rascunho.salvar({
+      nome: this.usuario.nome.trim(),
       cpf,
-
-      tipo: Perfil.CIDADAO,
-
-      status: StatusAlistamento.AGUARDANDO_DOCUMENTOS,
-
-      documentos: [],
-
-      dataCadastro: new Date().toLocaleDateString('pt-BR')
-
-    };
-
-    this.usuarioService.adicionarUsuario(novoUsuario);
-
-    this.auth.entrar(novoUsuario.email, this.usuario.senha);
-
-    alert('Cadastro realizado com sucesso!');
+      dataNascimento: this.usuario.dataNascimento,
+      email: this.usuario.email.trim(),
+      telefone: this.usuario.telefone.trim(),
+      senha: this.usuario.senha
+    });
 
     this.router.navigate(['/cadastro-complementar']);
 

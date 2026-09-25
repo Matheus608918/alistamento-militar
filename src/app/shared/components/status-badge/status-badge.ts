@@ -26,6 +26,7 @@ export class StatusBadge {
 
       case StatusAlistamento.REPROVADO:
       case StatusDocumento.REPROVADO:
+      case StatusAlistamento.DOCUMENTOS_REPROVADOS:
         return 'perigo';
 
       case StatusAlistamento.AVALIACAO_AGENDADA:
@@ -33,6 +34,7 @@ export class StatusBadge {
 
       case StatusAlistamento.CADASTRO_INCOMPLETO:
       case StatusAlistamento.AGUARDANDO_DOCUMENTOS:
+      case StatusDocumento.PENDENTE:
         return 'neutro';
 
       default:

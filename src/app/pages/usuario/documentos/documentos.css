@@ -245,3 +245,30 @@ tr:hover{
     }
 
 }
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:0 20px;
+}
+
+.btn-enviar:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.erro,
+.aviso{
+    padding:12px 16px;
+    border-radius:8px;
+    margin-bottom:20px;
+}
+
+.erro{
+    background:#fdecea;
+    color:#b71c1c;
+}
+
+.aviso{
+    background:#fff3cd;
+    color:#856404;
+}

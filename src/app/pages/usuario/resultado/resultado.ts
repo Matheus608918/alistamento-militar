@@ -1,6 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+
+import { AuthService } from '../../../services/auth';
+import { ProcessoService } from '../../../services/processo.service';
+import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
 
 @Component({
   selector: 'app-resultado',
@@ -11,84 +15,56 @@ import { Router } from '@angular/router';
 })
 export class Resultado implements OnInit {
 
+  private router = inject(Router);
+  private auth = inject(AuthService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
+
   nomeUsuario = '';
 
   dataCadastro = '';
 
-  situacao = 'Em análise';
+  situacao: string = StatusAlistamento.EM_ANALISE;
 
   proximaEtapa = 'Aguardando análise da Junta Militar';
 
-  constructor(private router: Router) {}
+  get classeSituacao(): string {
 
-  ngOnInit(): void {
+    switch (this.situacao) {
+      case StatusAlistamento.APROVADO: return 'aprovado';
+      case StatusAlistamento.REPROVADO: return 'reprovado';
+      default: return 'analise';
+    }
 
-    const usuarioLogado = JSON.parse(
-      localStorage.getItem('usuarioLogado') || '{}'
-    );
+  }
 
-    const usuarios = JSON.parse(
-      localStorage.getItem('usuarios') || '[]'
-    );
+  async ngOnInit(): Promise<void> {
 
-    const usuario = usuarios.find(
-      (u: any) => u.email === usuarioLogado.email
-    );
+    const sessao = this.auth.usuarioAtual();
 
-    if (!usuario) {
+    if (!sessao) {
       return;
     }
 
-    const { senha, ...usuarioSemSenha } = usuario;
+    this.nomeUsuario = sessao.nome || 'Usuário';
 
-    localStorage.setItem(
-      'usuarioLogado',
-      JSON.stringify(usuarioSemSenha)
-    );
+    try {
 
-    this.nomeUsuario = usuario.nome || 'Usuário';
+      const processo = await this.processoService.carregarDoUsuario(sessao.id);
+      const view = this.processoService.paraView(processo);
 
-    this.dataCadastro =
-      usuario.dataCadastro ||
-      new Date().toLocaleDateString('pt-BR');
+      this.nomeUsuario = view.nome || 'Usuário';
+      this.dataCadastro = view.dataCadastro;
+      this.situacao = view.status;
+      this.proximaEtapa = this.processoService.proximaEtapa(view.status);
 
-    this.situacao =
-      usuario.status || 'Em análise';
+    } catch (erro) {
 
-    switch (this.situacao) {
+      console.error(erro);
 
-      case 'Aprovado':
+    } finally {
 
-        this.proximaEtapa =
-          'Você foi considerado APTO. Aguarde a convocação para incorporação.';
-
-        break;
-
-      case 'Reprovado':
-
-        this.proximaEtapa =
-          'Você foi dispensado do serviço militar. Procure a Junta Militar para mais informações.';
-
-        break;
-
-      case 'Avaliação Médica Agendada':
-
-        this.proximaEtapa =
-          'Compareça na data e horário informados para sua avaliação médica.';
-
-        break;
-
-      case 'Em análise':
-
-        this.proximaEtapa =
-          'Seus documentos estão sendo analisados pela Junta Militar.';
-
-        break;
-
-      default:
-
-        this.proximaEtapa =
-          'Aguardando atualização do processo.';
+      this.cdr.markForCheck();
 
     }
 

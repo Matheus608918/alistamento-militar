@@ -1,9 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { Usuario } from '../../../models/usuario.model';
-import { UsuarioService } from '../../../services/usuario.service';
+import { ApiService, mensagemErro } from '../../../services/api.service';
+import { AuthService } from '../../../services/auth';
+import { CidadaoView, ProcessoService } from '../../../services/processo.service';
+import { LocalApi } from '../../../models/api.models';
 
 import {
   StatusAlistamento,
@@ -15,6 +17,7 @@ import { Modal } from '../../../shared/components/modal/modal';
 import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 
 import { formatarCpf } from '../../../shared/utils/validadores';
+import { hojeIso, horaParaApi } from '../../../shared/utils/formatadores';
 
 @Component({
   selector: 'app-cidadaos',
@@ -31,53 +34,81 @@ import { formatarCpf } from '../../../shared/utils/validadores';
 })
 export class Cidadaos implements OnInit {
 
-  private usuarioService = inject(UsuarioService);
+  private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private processoService = inject(ProcessoService);
+  private cdr = inject(ChangeDetectorRef);
 
-  usuarios: Usuario[] = [];
-  usuariosFiltrados: Usuario[] = [];
+  usuarios: CidadaoView[] = [];
+  usuariosFiltrados: CidadaoView[] = [];
 
-  medicos: any[] = [];
+  locais: LocalApi[] = [];
 
   pesquisa = '';
   filtroStatus = 'Todos';
 
-  usuarioSelecionado: Usuario | null = null;
+  usuarioSelecionado: CidadaoView | null = null;
   mostrarDetalhes = false;
 
   mostrarAgendamento = false;
-  usuarioAgendamento: Usuario | null = null;
+  usuarioAgendamento: CidadaoView | null = null;
 
-  medicoSelecionado = '';
+  localSelecionado: number | null = null;
   data = '';
   horario = '';
-  local = '';
+
+  salvando = false;
+
+  erro = '';
 
   readonly Status = StatusAlistamento;
 
   readonly opcoesStatus = Object.values(StatusAlistamento);
 
-  ngOnInit(): void {
-    this.carregarUsuarios();
-    this.carregarMedicos();
+  async ngOnInit(): Promise<void> {
+    await Promise.all([
+      this.carregarUsuarios(),
+      this.carregarLocais()
+    ]);
   }
 
-  carregarUsuarios(): void {
-    this.usuarios = this.usuarioService.listarCidadaos();
-    this.filtrar();
-  }
-
-  carregarMedicos(): void {
+  async carregarUsuarios(): Promise<void> {
 
     try {
 
-      this.medicos = JSON.parse(
-        localStorage.getItem('medicos') || '[]'
-      );
+      const processos = await this.processoService.carregarTodos();
 
+      this.usuarios = processos.map(p => this.processoService.paraView(p));
+      this.erro = '';
+
+      if (this.usuarioSelecionado) {
+        const id = this.usuarioSelecionado.id;
+        this.usuarioSelecionado = this.usuarios.find(u => u.id === id) ?? null;
+        this.mostrarDetalhes = !!this.usuarioSelecionado;
+      }
+
+      this.filtrar();
+
+    } catch (erro) {
+
+      this.erro = mensagemErro(erro, 'Não foi possível carregar os cidadãos.');
+
+    } finally {
+
+      this.cdr.markForCheck();
+
+    }
+
+  }
+
+  async carregarLocais(): Promise<void> {
+
+    try {
+      this.locais = await this.api.listarLocais();
     } catch {
-
-      this.medicos = [];
-
+      this.locais = [];
+    } finally {
+      this.cdr.markForCheck();
     }
 
   }
@@ -91,13 +122,12 @@ export class Cidadaos implements OnInit {
       const casaPesquisa =
         !termo ||
         usuario.nome?.toLowerCase().includes(termo) ||
-        usuario.cpf?.replace(/\D/g, '').includes(termo.replace(/\D/g, ''));
-
-      const status = usuario.status || StatusAlistamento.EM_ANALISE;
+        (termo.replace(/\D/g, '') !== '' &&
+          usuario.cpf?.replace(/\D/g, '').includes(termo.replace(/\D/g, '')));
 
       const casaStatus =
         this.filtroStatus === 'Todos' ||
-        status === this.filtroStatus;
+        usuario.status === this.filtroStatus;
 
       return casaPesquisa && casaStatus;
 
@@ -109,7 +139,7 @@ export class Cidadaos implements OnInit {
     return cpf ? formatarCpf(cpf) : '-';
   }
 
-  documentosAprovados(usuario: Usuario): boolean {
+  documentosAprovados(usuario: CidadaoView): boolean {
 
     const docs = usuario.documentos ?? [];
 
@@ -120,15 +150,15 @@ export class Cidadaos implements OnInit {
 
   }
 
-  temAgendamento(usuario: Usuario): boolean {
+  temAgendamento(usuario: CidadaoView): boolean {
     return !!usuario.agendamento;
   }
 
-  avaliacaoConcluida(usuario: Usuario): boolean {
+  avaliacaoConcluida(usuario: CidadaoView): boolean {
     return !!usuario.avaliacao?.resultado;
   }
 
-  jaDecidido(usuario: Usuario): boolean {
+  jaDecidido(usuario: CidadaoView): boolean {
 
     return (
       usuario.status === StatusAlistamento.APROVADO ||
@@ -137,7 +167,7 @@ export class Cidadaos implements OnInit {
 
   }
 
-  podeEmitirParecer(usuario: Usuario): boolean {
+  podeEmitirParecer(usuario: CidadaoView): boolean {
 
     return (
       this.documentosAprovados(usuario) &&
@@ -148,7 +178,7 @@ export class Cidadaos implements OnInit {
 
   }
 
-  motivoBloqueioParecer(usuario: Usuario): string {
+  motivoBloqueioParecer(usuario: CidadaoView): string {
 
     if (this.jaDecidido(usuario)) {
       return `Parecer já emitido: ${usuario.status}.`;
@@ -170,7 +200,7 @@ export class Cidadaos implements OnInit {
 
   }
 
-  podeAgendar(usuario: Usuario): boolean {
+  podeAgendar(usuario: CidadaoView): boolean {
 
     return (
       this.documentosAprovados(usuario) &&
@@ -179,7 +209,7 @@ export class Cidadaos implements OnInit {
 
   }
 
-  motivoBloqueioAgendamento(usuario: Usuario): string {
+  motivoBloqueioAgendamento(usuario: CidadaoView): string {
 
     if (this.temAgendamento(usuario)) {
       return 'Este cidadão já possui avaliação agendada.';
@@ -193,7 +223,7 @@ export class Cidadaos implements OnInit {
 
   }
 
-  visualizar(usuario: Usuario): void {
+  visualizar(usuario: CidadaoView): void {
     this.usuarioSelecionado = usuario;
     this.mostrarDetalhes = true;
   }
@@ -203,70 +233,63 @@ export class Cidadaos implements OnInit {
     this.mostrarDetalhes = false;
   }
 
-  aprovar(usuario: Usuario): void {
+  aprovar(usuario: CidadaoView): void {
 
     if (!this.podeEmitirParecer(usuario)) {
-
       alert(this.motivoBloqueioParecer(usuario));
-
       return;
-
     }
 
     if (!confirm(`Confirmar parecer APTO para ${usuario.nome}?`)) {
       return;
     }
 
-    usuario.status = StatusAlistamento.APROVADO;
-    usuario.resultado = 'Apto ao Serviço Militar';
-
-    this.salvar(usuario);
+    this.emitirParecer(usuario, StatusAlistamento.APROVADO);
 
   }
 
-  reprovar(usuario: Usuario): void {
+  reprovar(usuario: CidadaoView): void {
 
     if (!this.podeEmitirParecer(usuario)) {
-
       alert(this.motivoBloqueioParecer(usuario));
-
       return;
-
     }
 
     if (!confirm(`Confirmar DISPENSA para ${usuario.nome}?`)) {
       return;
     }
 
-    usuario.status = StatusAlistamento.REPROVADO;
-    usuario.resultado = 'Dispensado do Serviço Militar';
-
-    this.salvar(usuario);
+    this.emitirParecer(usuario, StatusAlistamento.REPROVADO);
 
   }
 
-  excluir(usuario: Usuario): void {
+  async excluir(usuario: CidadaoView): Promise<void> {
 
     if (!confirm(`Excluir o cadastro de ${usuario.nome}? Esta ação não pode ser desfeita.`)) {
       return;
     }
 
-    this.usuarioService.excluirUsuario(usuario.email);
+    try {
 
-    this.fecharDetalhes();
+      await this.processoService.excluirCidadao(usuario.processo);
 
-    this.carregarUsuarios();
+      this.fecharDetalhes();
+
+      await this.carregarUsuarios();
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível excluir o cidadão.'));
+
+    }
 
   }
 
-  agendar(usuario: Usuario): void {
+  agendar(usuario: CidadaoView): void {
 
     if (!this.podeAgendar(usuario)) {
-
       alert(this.motivoBloqueioAgendamento(usuario));
-
       return;
-
     }
 
     this.usuarioAgendamento = usuario;
@@ -284,71 +307,93 @@ export class Cidadaos implements OnInit {
   }
 
   private limparCamposAgendamento(): void {
-    this.medicoSelecionado = '';
+    this.localSelecionado = null;
     this.data = '';
     this.horario = '';
-    this.local = '';
   }
 
   get dataMinima(): string {
-    return new Date().toISOString().split('T')[0];
+    return hojeIso();
   }
 
-  confirmarAgendamento(): void {
+  async confirmarAgendamento(): Promise<void> {
 
-    if (!this.usuarioAgendamento) {
+    const usuario = this.usuarioAgendamento;
+    const alistamento = usuario?.processo.alistamento;
+
+    if (!usuario || !alistamento) {
       return;
     }
 
-    if (
-      !this.medicoSelecionado ||
-      !this.data ||
-      !this.horario ||
-      !this.local.trim()
-    ) {
-
+    if (!this.localSelecionado || !this.data || !this.horario) {
       alert('Preencha todos os campos do agendamento.');
-
       return;
-
     }
 
     if (this.data < this.dataMinima) {
-
       alert('A data da avaliação não pode ser anterior a hoje.');
-
       return;
+    }
+
+    this.salvando = true;
+    this.cdr.markForCheck();
+
+    try {
+
+      await this.api.cadastrarAgendamento({
+        dataAgendamento: this.data,
+        horario: horaParaApi(this.horario),
+        idAlistamento: alistamento.id,
+        idLocal: this.localSelecionado
+      });
+
+      await this.processoService.atualizarStatus(
+        alistamento.id,
+        StatusAlistamento.AVALIACAO_AGENDADA
+      );
+
+      alert('Avaliação médica agendada com sucesso.');
+
+      this.fecharAgendamento();
+
+      await this.carregarUsuarios();
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível agendar a avaliação.'));
+
+    } finally {
+
+      this.salvando = false;
+      this.cdr.markForCheck();
 
     }
 
-    const usuario = this.usuarioAgendamento;
-
-    usuario.agendamento = {
-      data: this.data,
-      horario: this.horario,
-      local: this.local.trim(),
-      medico: this.medicoSelecionado,
-      status: 'Agendado',
-      confirmado: false
-    } as any;
-
-    usuario.status = StatusAlistamento.AVALIACAO_AGENDADA;
-
-    this.usuarioService.atualizarUsuario(usuario);
-
-    alert('Avaliação médica agendada com sucesso.');
-
-    this.fecharAgendamento();
-
-    this.carregarUsuarios();
-
   }
 
-  private salvar(usuario: Usuario): void {
+  private async emitirParecer(usuario: CidadaoView, status: StatusAlistamento): Promise<void> {
 
-    this.usuarioService.atualizarUsuario(usuario);
+    const alistamento = usuario.processo.alistamento;
 
-    this.carregarUsuarios();
+    if (!alistamento) {
+      return;
+    }
+
+    try {
+
+      await this.processoService.atualizarStatus(
+        alistamento.id,
+        status,
+        this.auth.ehAdmin() ? this.auth.usuarioAtual()?.id : undefined
+      );
+
+      await this.carregarUsuarios();
+
+    } catch (erro) {
+
+      alert(mensagemErro(erro, 'Não foi possível registrar o parecer.'));
+
+    }
 
   }
 

@@ -4,6 +4,8 @@
     Visualize e gerencie todos os agendamentos do sistema.
 </p>
 
+<p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
 <table>
 
     <thead>
@@ -56,16 +58,8 @@
                 <ng-container *ngIf="agendamento.status === 'Agendado'; else finalizado">
 
                     <button
-                        class="btn-confirmar"
-                        (click)="alterarStatus(agendamento, 'Confirmado')">
-
-                        Confirmar
-
-                    </button>
-
-                    <button
                         class="btn-cancelar"
-                        (click)="alterarStatus(agendamento, 'Cancelado')">
+                        (click)="cancelar(agendamento)">
 
                         Cancelar
 
