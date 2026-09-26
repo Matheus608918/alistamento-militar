@@ -133,9 +133,15 @@ export class ProcessoService {
 
   async carregarPorAlistamento(idAlistamento: number): Promise<Processo> {
 
-    const completo = await this.api.buscarAlistamentoCompleto(idAlistamento);
+    const processos = await this.carregarTodos();
 
-    return this.montarDoCompleto(completo, completo.alistamento.usuarioResponseDTO);
+    const processo = processos.find(p => p.alistamento?.id === idAlistamento);
+
+    if (!processo) {
+      throw new Error('Alistamento não encontrado.');
+    }
+
+    return processo;
 
   }
 
@@ -304,7 +310,9 @@ export class ProcessoService {
             endereco: agendamento.localResponseDTO
               ? `${agendamento.localResponseDTO.enderecoLocal} — ${agendamento.localResponseDTO.cidadeLocal}/${agendamento.localResponseDTO.estadoLocal}`
               : '-',
-            medico: avaliacao?.medicoResponseDTO?.nomeMedico ?? '',
+            medico: agendamento.medicoResponseDTO?.nomeMedico
+              ?? avaliacao?.medicoResponseDTO?.nomeMedico
+              ?? '',
             status: avaliacao ? 'Concluído' : 'Agendado'
           }
         : null,

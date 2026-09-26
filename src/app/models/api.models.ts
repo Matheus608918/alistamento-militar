@@ -155,6 +155,9 @@ export interface AgendamentoApi {
   horario: string;
   alistamentoResponseDTO: AlistamentoApi;
   localResponseDTO: LocalApi;
+  medicoResponseDTO?: MedicoApi | null;
+  confirmado?: boolean;
+  status?: string;
 }
 
 export interface AgendamentoRequest {
@@ -162,6 +165,7 @@ export interface AgendamentoRequest {
   horario: string;
   idAlistamento: number;
   idLocal: number;
+  idMedico: number;
 }
 
 export type ResultadoAvaliacao = 'Apto' | 'Inapto' | 'Em análise';

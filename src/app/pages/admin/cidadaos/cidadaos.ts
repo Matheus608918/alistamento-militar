@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, mensagemErro } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth';
 import { CidadaoView, ProcessoService } from '../../../services/processo.service';
-import { LocalApi } from '../../../models/api.models';
+import { LocalApi, MedicoApi } from '../../../models/api.models';
 
 import {
   StatusAlistamento,
@@ -44,6 +44,8 @@ export class Cidadaos implements OnInit {
 
   locais: LocalApi[] = [];
 
+  medicos: MedicoApi[] = [];
+
   pesquisa = '';
   filtroStatus = 'Todos';
 
@@ -54,6 +56,7 @@ export class Cidadaos implements OnInit {
   usuarioAgendamento: CidadaoView | null = null;
 
   localSelecionado: number | null = null;
+  medicoSelecionado: number | null = null;
   data = '';
   horario = '';
 
@@ -68,7 +71,8 @@ export class Cidadaos implements OnInit {
   async ngOnInit(): Promise<void> {
     await Promise.all([
       this.carregarUsuarios(),
-      this.carregarLocais()
+      this.carregarLocais(),
+      this.carregarMedicos()
     ]);
   }
 
@@ -107,6 +111,18 @@ export class Cidadaos implements OnInit {
       this.locais = await this.api.listarLocais();
     } catch {
       this.locais = [];
+    } finally {
+      this.cdr.markForCheck();
+    }
+
+  }
+
+  async carregarMedicos(): Promise<void> {
+
+    try {
+      this.medicos = await this.api.listarMedicos();
+    } catch {
+      this.medicos = [];
     } finally {
       this.cdr.markForCheck();
     }
@@ -308,6 +324,7 @@ export class Cidadaos implements OnInit {
 
   private limparCamposAgendamento(): void {
     this.localSelecionado = null;
+    this.medicoSelecionado = null;
     this.data = '';
     this.horario = '';
   }
@@ -325,7 +342,7 @@ export class Cidadaos implements OnInit {
       return;
     }
 
-    if (!this.localSelecionado || !this.data || !this.horario) {
+    if (!this.localSelecionado || !this.medicoSelecionado || !this.data || !this.horario) {
       alert('Preencha todos os campos do agendamento.');
       return;
     }
@@ -344,7 +361,8 @@ export class Cidadaos implements OnInit {
         dataAgendamento: this.data,
         horario: horaParaApi(this.horario),
         idAlistamento: alistamento.id,
-        idLocal: this.localSelecionado
+        idLocal: this.localSelecionado,
+        idMedico: this.medicoSelecionado
       });
 
       await this.processoService.atualizarStatus(

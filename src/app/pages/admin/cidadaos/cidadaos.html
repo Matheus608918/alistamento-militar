@@ -440,6 +440,33 @@
 
             </div>
 
+            <div class="campo">
+
+                <label for="ag-medico">Médico responsável</label>
+
+                <select
+                    id="ag-medico"
+                    [(ngModel)]="medicoSelecionado"
+                    required>
+
+                    <option [ngValue]="null">Selecione um médico</option>
+
+                    <option
+                        *ngFor="let medico of medicos"
+                        [ngValue]="medico.id">
+
+                        {{ medico.nomeMedico }} — CRM {{ medico.crm }}
+
+                    </option>
+
+                </select>
+
+                <p class="campo-erro" *ngIf="medicos.length === 0">
+                    Nenhum médico cadastrado. Cadastre um médico antes de agendar.
+                </p>
+
+            </div>
+
             <div class="linha">
 
                 <div class="campo">
@@ -475,7 +502,7 @@
 
             <app-button
                 variante="primario"
-                [desabilitado]="locais.length === 0"
+                [desabilitado]="locais.length === 0 || medicos.length === 0"
                 [carregando]="salvando"
                 (acionar)="confirmarAgendamento()">
 
