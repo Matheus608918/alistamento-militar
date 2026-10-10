@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { Perfil } from '../shared/enums/perfil.enum';
 import { ApiService } from './api.service';
+import { LoginResponse } from '../models/api.models';
 
 export interface SessaoUsuario {
   id: number;
@@ -71,15 +72,24 @@ export class AuthService {
 
   }
 
+  /*
+   Login com JWT:
+   1. envia e-mail e senha para a API;
+   2. a API confere a senha (BCrypt) e devolve um token JWT assinado, válido por 2 horas;
+   3. o token fica guardado no navegador e o interceptor o envia em toda requisição;
+   4. com o perfil (role) devolvido, o front abre o painel certo.
+   */
   async entrar(email: string, senha: string): Promise<string> {
 
     this.limparSessao();
 
     const emailNormalizado = email.trim();
 
+    let resposta: LoginResponse;
+
     try {
 
-      const resposta = await this.api.login(emailNormalizado, senha);
+      resposta = await this.fazerLogin(emailNormalizado, senha);
 
       localStorage.setItem(this.CHAVE_TOKEN, resposta.token);
 
@@ -95,7 +105,7 @@ export class AuthService {
 
     try {
 
-      const sessao = await this.identificarPerfil(emailNormalizado);
+      const sessao = await this.identificarPerfil(emailNormalizado, resposta);
 
       localStorage.setItem(this.CHAVE_SESSAO, JSON.stringify(sessao));
       this._usuarioAtual.set(sessao);
@@ -114,59 +124,144 @@ export class AuthService {
 
   }
 
-  private async identificarPerfil(email: string): Promise<SessaoUsuario> {
+  // Usa o login único (/auth/login). Se a API ainda não tiver esse endpoint, usa o antigo.
+  private async fazerLogin(email: string, senha: string): Promise<LoginResponse> {
+
+    try {
+
+      const resposta = await this.api.login(email, senha);
+
+      return { ...resposta, role: resposta.role ?? null };
+
+    } catch (erro) {
+
+      const endpointAusente = erro instanceof HttpErrorResponse && [404, 405].includes(erro.status);
+
+      if (!endpointAusente) {
+        throw erro;
+      }
+
+      // O login antigo sempre responde "USER", então o perfil é descoberto depois
+      const resposta = await this.api.loginLegado(email, senha);
+
+      return { token: resposta.token, role: null };
+
+    }
+
+  }
+
+  private perfilDaRole(role?: string | null): Perfil | null {
+
+    switch ((role ?? '').toUpperCase()) {
+      case 'ADMIN': return Perfil.ADMIN;
+      case 'MEDICO': return Perfil.MEDICO;
+      case 'USER': return Perfil.CIDADAO;
+      default: return null;
+    }
+
+  }
+
+  /*
+   Monta os dados da sessão.
+   Com o perfil vindo do token, só a informação daquele perfil é buscada
+   (LGPD: o cidadão não precisa carregar a lista de outros cidadãos).
+   */
+  private async identificarPerfil(email: string, resposta: LoginResponse): Promise<SessaoUsuario> {
 
     const alvo = email.toLowerCase();
+    const perfil = this.perfilDaRole(resposta.role);
 
-    const usuarios = await this.api.listarUsuarios();
-    const u = usuarios.find(x => x.email?.toLowerCase() === alvo);
+    if (perfil === null || perfil === Perfil.CIDADAO) {
 
-    if (u) {
-      return {
-        id: u.id,
-        nome: u.nome,
-        email: u.email,
-        tipo: Perfil.CIDADAO,
-        telefone: u.telefone,
-        cpf: u.cpf,
-        dataNascimento: u.dataNascimento
-      };
+      const u = resposta.id && perfil === Perfil.CIDADAO
+        ? await this.api.buscarUsuario(resposta.id)
+        : (await this.api.listarUsuarios()).find(x => x.email?.toLowerCase() === alvo);
+
+      if (u) {
+        return {
+          id: u.id,
+          nome: u.nome,
+          email: u.email,
+          tipo: Perfil.CIDADAO,
+          telefone: u.telefone,
+          cpf: u.cpf,
+          dataNascimento: u.dataNascimento
+        };
+      }
+
     }
 
-    const medicos = await this.api.listarMedicos();
-    const m = medicos.find(x => x.emailMedico?.toLowerCase() === alvo);
+    if (perfil === null || perfil === Perfil.MEDICO) {
 
-    if (m) {
-      return {
-        id: m.id,
-        nome: m.nomeMedico,
-        email: m.emailMedico ?? email,
-        tipo: Perfil.MEDICO,
-        telefone: m.telefoneMedico,
-        crm: m.crm,
-        especialidade: m.especialidade
-      };
+      const medicos = await this.api.listarMedicos();
+      const m = medicos.find(x =>
+        resposta.id ? x.id === resposta.id : x.emailMedico?.toLowerCase() === alvo);
+
+      if (m) {
+        return {
+          id: m.id,
+          nome: m.nomeMedico,
+          email: m.emailMedico ?? email,
+          tipo: Perfil.MEDICO,
+          telefone: m.telefoneMedico,
+          crm: m.crm,
+          especialidade: m.especialidade
+        };
+      }
+
     }
 
-    const admins = await this.api.listarAdministradores();
-    const a = admins.find(x => x.emailAdmin?.toLowerCase() === alvo);
+    if (perfil === null || perfil === Perfil.ADMIN) {
 
-    if (a) {
-      return {
-        id: a.id,
-        nome: a.nomeAdmin,
-        email: a.emailAdmin,
-        tipo: Perfil.ADMIN
-      };
+      if (resposta.id && resposta.nome) {
+        return {
+          id: resposta.id,
+          nome: resposta.nome,
+          email,
+          tipo: Perfil.ADMIN
+        };
+      }
+
+      const admins = await this.api.listarAdministradores();
+      const a = admins.find(x => x.emailAdmin?.toLowerCase() === alvo);
+
+      if (a) {
+        return {
+          id: a.id,
+          nome: a.nomeAdmin,
+          email: a.emailAdmin,
+          tipo: Perfil.ADMIN
+        };
+      }
+
     }
 
     throw new Error('Perfil não encontrado para este e-mail.');
 
   }
 
-  sair(): void {
+
+  /*
+   Encerra a sessão: apaga o token e os dados guardados no navegador.
+   expirou = true quando o token venceu ou foi recusado pela API.
+   */
+  sair(expirou = false): void {
+
+    const estavaLogado = this._usuarioAtual() !== null;
 
     this.limparSessao();
+
+    if (expirou) {
+
+      // Várias requisições podem receber 401 ao mesmo tempo: só a primeira redireciona
+      if (estavaLogado) {
+        this.router.navigate(['/login'], { queryParams: { sessao: 'expirada' } });
+      }
+
+      return;
+
+    }
+
     this.router.navigate(['/login']);
 
   }

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ApiService, mensagemErro } from '../../../services/api.service';
 import { AgendamentoView, CidadaoView, ProcessoService } from '../../../services/processo.service';
 import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
+import { mascararCpf } from '../../../shared/utils/validadores';
 
 interface LinhaAgendamento {
   nome: string;
@@ -18,6 +19,9 @@ interface LinhaAgendamento {
   styleUrl: './dashboard.css'
 })
 export class Dashboard implements OnInit {
+
+  // LGPD: nas listas o CPF aparece mascarado
+  readonly mascararCpf = mascararCpf;
 
   private api = inject(ApiService);
   private processoService = inject(ProcessoService);

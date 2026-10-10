@@ -56,7 +56,7 @@ export class Resultado implements OnInit {
       this.nomeUsuario = view.nome || 'Usuário';
       this.dataCadastro = view.dataCadastro;
       this.situacao = view.status;
-      this.proximaEtapa = this.processoService.proximaEtapa(view.status);
+      this.proximaEtapa = this.processoService.proximaEtapa(view.status, view.sexo);
 
     } catch (erro) {
 

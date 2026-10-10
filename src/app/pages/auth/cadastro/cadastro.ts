@@ -4,16 +4,25 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { CadastroRascunhoService } from '../../../services/cadastro-rascunho.service';
-import { cpfValido } from '../../../shared/utils/validadores';
+import {
+  NACIONALIDADES,
+  SEXOS,
+  cpfValido,
+  erroIdadeAlistamento
+} from '../../../shared/utils/validadores';
+import { hojeIso } from '../../../shared/utils/formatadores';
 
 interface FormularioCadastro {
   nome: string;
   cpf: string;
   dataNascimento: string;
+  sexo: string;
+  nacionalidade: string;
   email: string;
   telefone: string;
   senha: string;
   confirmarSenha: string;
+  consentimentoLgpd: boolean;
 }
 
 @Component({
@@ -32,14 +41,23 @@ export class Cadastro implements OnInit {
   private router = inject(Router);
   private rascunho = inject(CadastroRascunhoService);
 
+  readonly sexos = SEXOS;
+
+  readonly nacionalidades = NACIONALIDADES;
+
+  readonly dataMaxima = hojeIso();
+
   usuario: FormularioCadastro = {
     nome: '',
     cpf: '',
     dataNascimento: '',
+    sexo: '',
+    nacionalidade: '',
     email: '',
     telefone: '',
     senha: '',
-    confirmarSenha: ''
+    confirmarSenha: '',
+    consentimentoLgpd: false
   };
 
   ngOnInit(): void {
@@ -52,8 +70,18 @@ export class Cadastro implements OnInit {
 
   }
 
-  validarCPF(cpf: string): boolean {
-    return cpfValido(cpf);
+  get aviso(): string {
+
+    if (this.usuario.sexo === 'Feminino') {
+      return 'Para mulheres, o alistamento é voluntário e só pode ser feito no ano em que você completa 18 anos.';
+    }
+
+    if (this.usuario.sexo === 'Masculino') {
+      return 'Para homens, o alistamento é obrigatório a partir do ano em que você completa 18 anos.';
+    }
+
+    return '';
+
   }
 
   cadastrar() {
@@ -62,6 +90,8 @@ export class Cadastro implements OnInit {
       !this.usuario.nome ||
       !this.usuario.cpf ||
       !this.usuario.dataNascimento ||
+      !this.usuario.sexo ||
+      !this.usuario.nacionalidade ||
       !this.usuario.email ||
       !this.usuario.telefone ||
       !this.usuario.senha ||
@@ -71,30 +101,32 @@ export class Cadastro implements OnInit {
       return;
     }
 
+    // LGPD: sem o aceite da Política de Privacidade o cadastro não continua
+    if (!this.usuario.consentimentoLgpd) {
+      alert('Para continuar, leia e aceite a Política de Privacidade.');
+      return;
+    }
+
+    if (this.usuario.senha.length < 6) {
+      alert('A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+
     if (this.usuario.senha !== this.usuario.confirmarSenha) {
       alert('As senhas não coincidem.');
       return;
     }
 
-    const nascimento = new Date(this.usuario.dataNascimento);
-    const hoje = new Date();
+    const erroIdade = erroIdadeAlistamento(this.usuario.dataNascimento, this.usuario.sexo);
 
-    let idade = hoje.getFullYear() - nascimento.getFullYear();
-
-    const mes = hoje.getMonth() - nascimento.getMonth();
-
-    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
-      idade--;
-    }
-
-    if (idade < 18) {
-      alert('O alistamento é permitido apenas para maiores de 18 anos.');
+    if (erroIdade) {
+      alert(erroIdade);
       return;
     }
 
     const cpf = this.usuario.cpf.replace(/\D/g, '');
 
-    if (!this.validarCPF(cpf)) {
+    if (!cpfValido(cpf)) {
       alert('CPF inválido.');
       return;
     }
@@ -117,9 +149,12 @@ export class Cadastro implements OnInit {
       nome: this.usuario.nome.trim(),
       cpf,
       dataNascimento: this.usuario.dataNascimento,
+      sexo: this.usuario.sexo,
+      nacionalidade: this.usuario.nacionalidade,
       email: this.usuario.email.trim(),
       telefone: this.usuario.telefone.trim(),
-      senha: this.usuario.senha
+      senha: this.usuario.senha,
+      consentimentoLgpd: this.usuario.consentimentoLgpd
     });
 
     this.router.navigate(['/cadastro-complementar']);

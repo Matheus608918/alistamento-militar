@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, mensagemErro } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth';
 import { CidadaoView, ProcessoService } from '../../../services/processo.service';
-import { LocalApi, MedicoApi } from '../../../models/api.models';
+import { LocalApi, MedicoApi, PedidoSenhaApi } from '../../../models/api.models';
 
 import {
   StatusAlistamento,
@@ -16,8 +16,8 @@ import { Button } from '../../../shared/components/button/button';
 import { Modal } from '../../../shared/components/modal/modal';
 import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 
-import { formatarCpf } from '../../../shared/utils/validadores';
-import { hojeIso, horaParaApi } from '../../../shared/utils/formatadores';
+import { formatarCpf, mascararCpf } from '../../../shared/utils/validadores';
+import { formatarData, hojeIso, horaParaApi } from '../../../shared/utils/formatadores';
 
 @Component({
   selector: 'app-cidadaos',
@@ -34,6 +34,9 @@ import { hojeIso, horaParaApi } from '../../../shared/utils/formatadores';
 })
 export class Cidadaos implements OnInit {
 
+  // LGPD: na lista o CPF aparece mascarado; completo só nos detalhes
+  readonly mascararCpf = mascararCpf;
+
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private processoService = inject(ProcessoService);
@@ -48,6 +51,7 @@ export class Cidadaos implements OnInit {
 
   pesquisa = '';
   filtroStatus = 'Todos';
+  filtroSexo = 'Todos';
 
   usuarioSelecionado: CidadaoView | null = null;
   mostrarDetalhes = false;
@@ -64,6 +68,21 @@ export class Cidadaos implements OnInit {
 
   erro = '';
 
+  // ----- Recuperação de senha -----
+
+  pedidosSenha: PedidoSenhaApi[] = [];
+
+  mostrarSenha = false;
+  usuarioSenha: CidadaoView | null = null;
+  pedidoEmAtendimento: PedidoSenhaApi | null = null;
+
+  novaSenha = '';
+  confirmarNovaSenha = '';
+  erroSenha = '';
+  salvandoSenha = false;
+
+  readonly formatarData = formatarData;
+
   readonly Status = StatusAlistamento;
 
   readonly opcoesStatus = Object.values(StatusAlistamento);
@@ -72,7 +91,8 @@ export class Cidadaos implements OnInit {
     await Promise.all([
       this.carregarUsuarios(),
       this.carregarLocais(),
-      this.carregarMedicos()
+      this.carregarMedicos(),
+      this.carregarPedidosSenha()
     ]);
   }
 
@@ -129,6 +149,140 @@ export class Cidadaos implements OnInit {
 
   }
 
+  // Se a API ainda não tiver os pedidos de senha, a seção simplesmente não aparece
+  async carregarPedidosSenha(): Promise<void> {
+
+    try {
+      const pedidos = await this.api.listarPedidosSenha();
+      this.pedidosSenha = pedidos.filter(p => !p.status || p.status.toUpperCase() === 'PENDENTE');
+    } catch {
+      this.pedidosSenha = [];
+    } finally {
+      this.cdr.markForCheck();
+    }
+
+  }
+
+  atenderPedido(pedido: PedidoSenhaApi): void {
+
+    const email = pedido.email.trim().toLowerCase();
+    const cidadao = this.usuarios.find(u => u.email?.toLowerCase() === email);
+
+    if (cidadao) {
+      this.abrirRedefinirSenha(cidadao, pedido);
+      return;
+    }
+
+    if (this.medicos.some(m => m.emailMedico?.toLowerCase() === email)) {
+      alert('Este e-mail é de um médico. Redefina a senha na tela Médicos, editando o cadastro dele.');
+      return;
+    }
+
+    if (confirm('Nenhum cadastro usa este e-mail. Deseja marcar o pedido como atendido?')) {
+      this.concluirPedido(pedido);
+    }
+
+  }
+
+  abrirRedefinirSenha(usuario: CidadaoView, pedido: PedidoSenhaApi | null = null): void {
+
+    this.usuarioSenha = usuario;
+    this.pedidoEmAtendimento = pedido;
+    this.novaSenha = '';
+    this.confirmarNovaSenha = '';
+    this.erroSenha = '';
+    this.mostrarSenha = true;
+
+  }
+
+  fecharRedefinirSenha(): void {
+
+    this.mostrarSenha = false;
+    this.usuarioSenha = null;
+    this.pedidoEmAtendimento = null;
+    this.novaSenha = '';
+    this.confirmarNovaSenha = '';
+
+  }
+
+  // Senha temporária de 8 caracteres, sem letras parecidas (0/O, 1/l)
+  gerarSenhaTemporaria(): void {
+
+    const caracteres = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    const valores = new Uint32Array(8);
+
+    crypto.getRandomValues(valores);
+
+    const senha = Array.from(valores, v => caracteres[v % caracteres.length]).join('');
+
+    this.novaSenha = senha;
+    this.confirmarNovaSenha = senha;
+    this.erroSenha = '';
+
+  }
+
+  async salvarNovaSenha(): Promise<void> {
+
+    this.erroSenha = '';
+
+    if (!this.usuarioSenha) {
+      return;
+    }
+
+    if (this.novaSenha.length < 6) {
+      this.erroSenha = 'A senha precisa ter pelo menos 6 caracteres.';
+      return;
+    }
+
+    if (this.novaSenha !== this.confirmarNovaSenha) {
+      this.erroSenha = 'As senhas não coincidem.';
+      return;
+    }
+
+    this.salvandoSenha = true;
+    this.cdr.markForCheck();
+
+    try {
+
+      await this.api.redefinirSenhaUsuario(this.usuarioSenha.id, this.novaSenha);
+
+      if (this.pedidoEmAtendimento) {
+        await this.concluirPedido(this.pedidoEmAtendimento);
+      }
+
+      alert(
+        `Senha de ${this.usuarioSenha.nome} redefinida.\n\n` +
+        `Nova senha: ${this.novaSenha}\n\n` +
+        'Informe a nova senha ao cidadão por um canal seguro.'
+      );
+
+      this.fecharRedefinirSenha();
+
+    } catch (erro) {
+
+      this.erroSenha = mensagemErro(erro, 'Não foi possível redefinir a senha.');
+
+    } finally {
+
+      this.salvandoSenha = false;
+      this.cdr.markForCheck();
+
+    }
+
+  }
+
+  async concluirPedido(pedido: PedidoSenhaApi): Promise<void> {
+
+    try {
+      await this.api.concluirPedidoSenha(pedido.id);
+    } catch {
+      // Se não conseguir marcar, o pedido continua na lista para tentar de novo
+    }
+
+    await this.carregarPedidosSenha();
+
+  }
+
   filtrar(): void {
 
     const termo = this.pesquisa.trim().toLowerCase();
@@ -145,7 +299,11 @@ export class Cidadaos implements OnInit {
         this.filtroStatus === 'Todos' ||
         usuario.status === this.filtroStatus;
 
-      return casaPesquisa && casaStatus;
+      const casaSexo =
+        this.filtroSexo === 'Todos' ||
+        usuario.sexo === this.filtroSexo;
+
+      return casaPesquisa && casaStatus && casaSexo;
 
     });
 

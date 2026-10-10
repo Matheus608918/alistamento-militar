@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 import { mensagemErro } from '../../../services/api.service';
 import { AgendamentoView, CidadaoView, ProcessoService } from '../../../services/processo.service';
+import { mascararCpf } from '../../../shared/utils/validadores';
 
 interface Paciente {
   nome: string;
@@ -21,6 +22,9 @@ interface Paciente {
   styleUrl: './dashboard.css'
 })
 export class Dashboard implements OnInit {
+
+  // LGPD: nas listas o CPF aparece mascarado
+  readonly mascararCpf = mascararCpf;
 
   private router = inject(Router);
   private auth = inject(AuthService);

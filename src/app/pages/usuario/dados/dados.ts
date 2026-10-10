@@ -1,15 +1,20 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../services/auth';
 import { ApiService, mensagemErro } from '../../../services/api.service';
 import { formatarData } from '../../../shared/utils/formatadores';
+import { tipoAlistamento } from '../../../services/processo.service';
 
 interface DadosView {
   nome: string;
   cpf: string;
   rg: string;
   dataNascimento: string;
+  sexo: string;
+  nacionalidade: string;
+  tipoAlistamento: string;
   nomeMae: string;
   nomePai: string;
   email: string;
@@ -30,7 +35,7 @@ interface DadosView {
 @Component({
   selector: 'app-dados',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dados.html',
   styleUrl: './dados.css'
 })
@@ -61,6 +66,9 @@ export class Dados implements OnInit {
         cpf: u.cpf,
         rg: u.rg ?? '',
         dataNascimento: formatarData(u.dataNascimento),
+        sexo: u.sexo ?? '',
+        nacionalidade: u.nacionalidade ?? '',
+        tipoAlistamento: tipoAlistamento(u.sexo),
         nomeMae: u.nomeMae ?? '',
         nomePai: u.nomePai ?? '',
         email: u.email,

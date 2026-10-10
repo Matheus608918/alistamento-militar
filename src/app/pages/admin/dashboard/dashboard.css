@@ -149,6 +149,24 @@ tbody tr:hover{
         font-size:13px;
     }
 
+    .header{
+        flex-wrap:wrap;
+        gap:15px;
+        margin-bottom:25px;
+    }
+
+    .header h1{
+        font-size:26px;
+    }
+
+    .card h2{
+        font-size:32px;
+    }
+
+    .tabela{
+        padding:20px;
+    }
+
 }
 .erro{
     background:#fdecea;

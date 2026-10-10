@@ -36,6 +36,10 @@ export class Dashboard implements OnInit {
 
   dataCadastro = '';
 
+  tipoAlistamento = '';
+
+  feminino = false;
+
   agendamento: AgendamentoView | null = null;
 
   async ngOnInit(): Promise<void> {
@@ -59,8 +63,10 @@ export class Dashboard implements OnInit {
       this.quantidadeDocumentos = view.documentos.length;
       this.statusDocumentos = this.processoService.statusDocumentos(processo);
       this.status = view.status;
-      this.proximaEtapa = this.processoService.proximaEtapa(view.status);
+      this.proximaEtapa = this.processoService.proximaEtapa(view.status, view.sexo);
       this.dataCadastro = view.dataCadastro;
+      this.tipoAlistamento = view.tipoAlistamento;
+      this.feminino = view.sexo === 'Feminino';
       this.agendamento = view.agendamento;
       this.statusAvaliacao = view.avaliacao
         ? 'Concluída'

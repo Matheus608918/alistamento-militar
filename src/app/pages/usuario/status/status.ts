@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { AuthService } from '../../../services/auth';
-import { ProcessoService } from '../../../services/processo.service';
+import { ProcessoService, tipoAlistamento } from '../../../services/processo.service';
 import { StatusAlistamento, StatusDocumento } from '../../../shared/enums/perfil.enum';
 
 @Component({
@@ -24,6 +24,7 @@ export class Status implements OnInit {
   analise = 'Aguardando documentos';
   avaliacao = 'Aguardando';
   resultado = 'Pendente';
+  tipo = '';
 
   async ngOnInit(): Promise<void> {
 
@@ -37,6 +38,8 @@ export class Status implements OnInit {
 
       const processo = await this.processoService.carregarDoUsuario(sessao.id);
       const status = processo.status;
+
+      this.tipo = tipoAlistamento(processo.usuario.sexo);
 
       const statusDocs = this.processoService.statusDocumentos(processo);
 

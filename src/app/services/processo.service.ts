@@ -51,6 +51,9 @@ export interface CidadaoView {
   processo: Processo;
   id: number;
   nome: string;
+  sexo: string;
+  nacionalidade: string;
+  tipoAlistamento: string;
   cpf: string;
   email: string;
   telefone: string;
@@ -74,6 +77,20 @@ export interface CidadaoView {
   documentos: DocumentoView[];
   agendamento: AgendamentoView | null;
   avaliacao: AvaliacaoView | null;
+}
+
+export function tipoAlistamento(sexo?: string | null): string {
+
+  if (sexo === 'Feminino') {
+    return 'Alistamento voluntário';
+  }
+
+  if (sexo === 'Masculino') {
+    return 'Alistamento obrigatório';
+  }
+
+  return '-';
+
 }
 
 const STATUS_ENVIO_DOCUMENTOS: string[] = [
@@ -227,7 +244,9 @@ export class ProcessoService {
     return STATUS_ENVIO_DOCUMENTOS.includes(processo.status);
   }
 
-  proximaEtapa(status: string): string {
+  proximaEtapa(status: string, sexo?: string | null): string {
+
+    const feminino = sexo === 'Feminino';
 
     switch (status) {
 
@@ -251,10 +270,14 @@ export class ProcessoService {
         return 'Avaliação médica concluída. Aguarde o parecer da Junta Militar.';
 
       case StatusAlistamento.APROVADO:
-        return 'Você foi considerado APTO. Aguarde a convocação para incorporação.';
+        return feminino
+          ? 'Você foi considerada APTA. Aguarde a convocação. Até a incorporação, ainda é possível desistir do serviço voluntário.'
+          : 'Você foi considerado APTO. Aguarde a convocação para incorporação.';
 
       case StatusAlistamento.REPROVADO:
-        return 'Você foi dispensado do serviço militar. Procure a Junta Militar para mais informações.';
+        return feminino
+          ? 'Sua candidatura ao serviço militar voluntário não foi aprovada. Procure a Junta Militar para mais informações.'
+          : 'Você foi dispensado do serviço militar. Procure a Junta Militar para mais informações.';
 
       default:
         return 'Aguardando atualização do processo.';
@@ -275,6 +298,9 @@ export class ProcessoService {
       processo,
       id: u.id,
       nome: u.nome ?? '',
+      sexo: u.sexo ?? '',
+      nacionalidade: u.nacionalidade ?? '',
+      tipoAlistamento: tipoAlistamento(u.sexo),
       cpf: u.cpf ?? '',
       email: u.email ?? '',
       telefone: u.telefone ?? '',

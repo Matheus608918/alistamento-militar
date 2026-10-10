@@ -65,6 +65,17 @@ export class Sidebar {
 
   });
 
+  // No celular o menu começa fechado e abre pelo botão "Menu"
+  aberto = false;
+
+  alternar(): void {
+    this.aberto = !this.aberto;
+  }
+
+  fechar(): void {
+    this.aberto = false;
+  }
+
   sair(): void {
     this.auth.sair();
   }

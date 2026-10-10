@@ -22,7 +22,8 @@ import {
   TipoDocumentoApi,
   TipoDocumentoRequest,
   UsuarioApi,
-  UsuarioRequest
+  UsuarioRequest,
+  PedidoSenhaApi
 } from '../models/api.models';
 
 export function mensagemErro(erro: unknown, padrao = 'Ocorreu um erro inesperado.'): string {
@@ -85,7 +86,16 @@ export class ApiService {
     return firstValueFrom(this.http.delete<T>(this.url(caminho)));
   }
 
+  /*
+   Login único para cidadão, médico e administrador.
+   A API devolve o token JWT e o perfil (role) de quem entrou.
+   */
   login(email: string, senha: string): Promise<LoginResponse> {
+    return this.post<LoginResponse>('/auth/login', { email, senha });
+  }
+
+  // Login antigo, usado só se /auth/login não existir na API
+  loginLegado(email: string, senha: string): Promise<LoginResponse> {
     return this.post<LoginResponse>('/usuario/login', { email, senha });
   }
 
@@ -99,6 +109,67 @@ export class ApiService {
 
   cadastrarUsuario(dto: UsuarioRequest): Promise<UsuarioApi> {
     return this.post<UsuarioApi>('/usuario', dto);
+  }
+
+  atualizarUsuario(id: number, dto: UsuarioRequest): Promise<UsuarioApi> {
+    return this.put<UsuarioApi>(`/usuario/${id}`, dto);
+  }
+
+  /*
+   Redefinição de senha pelo administrador.
+   Busca os dados atuais do cidadão e envia tudo de volta com a nova senha
+   (a API só troca a senha quando ela vem preenchida e grava criptografada).
+   */
+  async redefinirSenhaUsuario(id: number, novaSenha: string): Promise<UsuarioApi> {
+
+    const u = await this.buscarUsuario(id);
+
+    const dto: UsuarioRequest = {
+      nome: u.nome,
+      dataNascimento: u.dataNascimento,
+      sexo: u.sexo ?? '',
+      nacionalidade: u.nacionalidade ?? '',
+      email: u.email,
+      senha: novaSenha,
+      telefone: u.telefone,
+      cpf: u.cpf,
+      nomePai: u.nomePai ?? null,
+      nomeMae: u.nomeMae ?? null,
+      estadoCivil: u.estadoCivil ?? null,
+      uf: u.uf ?? null,
+      escolaridade: u.escolaridade ?? null,
+      rg: u.rg ?? null,
+      localNascimento: u.localNascimento ?? null,
+      cep: u.cep ?? null,
+      bairro: u.bairro ?? null,
+      municipio: u.municipio ?? null,
+      paisResidencia: u.paisResidencia ?? null,
+      zonaResidencial: u.zonaResidencial ?? null,
+      numeroResidencia: u.numeroResidencia ?? null,
+      logradouro: u.logradouro ?? null,
+      estado: u.estado ?? null,
+      consentimentoLgpd: true
+    };
+
+    return this.atualizarUsuario(id, dto);
+
+  }
+
+  // ----- Recuperação de senha (versão simples) -----
+
+  // Público: registra o pedido feito na tela "Esqueci minha senha"
+  solicitarNovaSenha(email: string): Promise<void> {
+    return this.post<void>('/recuperacao-senha', { email });
+  }
+
+  // Administrador: pedidos ainda não atendidos
+  listarPedidosSenha(): Promise<PedidoSenhaApi[]> {
+    return this.get<PedidoSenhaApi[]>('/recuperacao-senha');
+  }
+
+  // Administrador: marca o pedido como atendido
+  concluirPedidoSenha(id: number): Promise<void> {
+    return this.patch<void>(`/recuperacao-senha/${id}/concluir`, {});
   }
 
   excluirUsuario(id: number): Promise<UsuarioApi> {

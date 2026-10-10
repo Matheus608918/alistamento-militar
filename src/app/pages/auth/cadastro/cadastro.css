@@ -45,17 +45,43 @@
   margin-bottom: 6px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
+  background: #ffffff;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #2F5233;
+}
+
+.form-group small {
+  margin-top: 6px;
+  color: #555;
+  font-size: 13px;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.cadastro-card p.aviso {
+  text-align: left;
+  margin: -6px 0 18px;
+  padding: 12px 14px;
+  border-left: 4px solid #2F5233;
+  border-radius: 6px;
+  background: #E8F0E9;
+  color: #233E26;
+  font-size: 14px;
 }
 
 button {
@@ -85,4 +111,43 @@ span a {
   color: #2F5233;
   text-decoration: none;
   font-weight: bold;
+}
+
+.consentimento {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 6px 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #444;
+}
+
+.consentimento input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: #2F5233;
+}
+
+.consentimento a {
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+
+  .cadastro-container {
+    padding: 16px;
+    align-items: flex-start;
+  }
+
+  .cadastro-card {
+    padding: 24px 18px;
+  }
+
+  .linha {
+    grid-template-columns: 1fr;
+  }
+
 }

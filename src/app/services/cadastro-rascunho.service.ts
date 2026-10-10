@@ -4,9 +4,12 @@ export interface RascunhoCadastro {
   nome: string;
   cpf: string;
   dataNascimento: string;
+  sexo: string;
+  nacionalidade: string;
   email: string;
   telefone: string;
   senha: string;
+  consentimentoLgpd: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

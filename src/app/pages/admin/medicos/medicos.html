@@ -30,12 +30,12 @@
 
     <div class="campo">
 
-        <label>Senha</label>
+        <label>{{ editando ? 'Nova senha' : 'Senha' }}</label>
 
         <input
             type="password"
-            [disabled]="editando"
-            [placeholder]="editando ? 'A senha não é alterada na edição' : ''"
+            autocomplete="new-password"
+            [placeholder]="editando ? 'Deixe em branco para manter a senha atual' : 'Mínimo de 6 caracteres'"
             [(ngModel)]="medico.senha">
 
     </div>

@@ -15,6 +15,15 @@
             novalidate>
 
             <p
+                class="alerta-aviso"
+                *ngIf="aviso && !erro"
+                role="status">
+
+                {{ aviso }}
+
+            </p>
+
+            <p
                 class="alerta-erro"
                 *ngIf="erro"
                 role="alert">
@@ -53,6 +62,8 @@
                     [attr.aria-invalid]="erro ? 'true' : null"
                     required>
 
+                <a class="esqueci" routerLink="/esqueci-senha">Esqueci minha senha</a>
+
             </div>
 
             <app-button
@@ -73,6 +84,12 @@
             Não possui uma conta?
 
             <a routerLink="/cadastro">Cadastrar</a>
+
+        </p>
+
+        <p class="rodape privacidade">
+
+            <a routerLink="/privacidade">Política de Privacidade</a>
 
         </p>
 

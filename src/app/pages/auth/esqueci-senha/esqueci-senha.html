@@ -1,0 +1,79 @@
+<main class="tela-login">
+
+    <div class="cartao-login">
+
+        <header class="topo">
+
+            <h1>Esqueci minha senha</h1>
+
+            <p>Peça uma nova senha para a administração.</p>
+
+        </header>
+
+        <form
+            (ngSubmit)="enviar()"
+            novalidate>
+
+            <p class="explicacao">
+                Informe o e-mail usado no cadastro. O administrador vai definir uma nova senha
+                e avisar você. Depois de entrar, guarde a nova senha em um lugar seguro.
+            </p>
+
+            <p
+                class="alerta-sucesso"
+                *ngIf="sucesso"
+                role="status">
+
+                {{ sucesso }}
+
+            </p>
+
+            <p
+                class="alerta-erro"
+                *ngIf="erro"
+                role="alert">
+
+                {{ erro }}
+
+            </p>
+
+            <div class="campo">
+
+                <label for="recuperar-email">E-mail</label>
+
+                <input
+                    id="recuperar-email"
+                    type="email"
+                    name="email"
+                    autocomplete="email"
+                    placeholder="email@exemplo.com"
+                    [(ngModel)]="email"
+                    [attr.aria-invalid]="erro ? 'true' : null"
+                    required>
+
+            </div>
+
+            <app-button
+                tipo="submit"
+                variante="primario"
+                tamanho="grande"
+                [blocoCompleto]="true"
+                [carregando]="enviando">
+
+                Pedir nova senha
+
+            </app-button>
+
+        </form>
+
+        <p class="rodape">
+
+            Lembrou a senha?
+
+            <a routerLink="/login">Voltar para o login</a>
+
+        </p>
+
+    </div>
+
+</main>

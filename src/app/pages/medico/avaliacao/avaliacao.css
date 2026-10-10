@@ -99,6 +99,10 @@ button:hover{
         padding:20px;
     }
 
+    .card{
+        padding:20px;
+    }
+
     .radio-group{
         flex-direction:column;
         gap:15px;

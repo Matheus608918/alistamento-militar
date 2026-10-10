@@ -5,6 +5,7 @@ import { mensagemErro } from '../../../services/api.service';
 import { Processo, ProcessoService } from '../../../services/processo.service';
 import { StatusAlistamento, StatusDocumento } from '../../../shared/enums/perfil.enum';
 import { formatarData } from '../../../shared/utils/formatadores';
+import { mascararCpf } from '../../../shared/utils/validadores';
 
 interface LinhaDocumento {
   usuario: string;
@@ -25,6 +26,9 @@ interface LinhaDocumento {
   styleUrl: './documentos.css'
 })
 export class Documentos implements OnInit {
+
+  // LGPD: nas listas o CPF aparece mascarado
+  readonly mascararCpf = mascararCpf;
 
   private processoService = inject(ProcessoService);
   private cdr = inject(ChangeDetectorRef);

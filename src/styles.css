@@ -162,8 +162,12 @@ img {
   }
 }
 
+.content > :not(router-outlet) {
+  display: block;
+  padding: 2rem;
+}
+
 .pagina {
-  padding: var(--esp-5);
   max-width: var(--largura-max-conteudo);
   margin: 0 auto;
 }
@@ -277,8 +281,20 @@ textarea:disabled {
     --texto-2xl: 1.5rem;
   }
 
-  .pagina {
-    padding: var(--esp-4);
+  .content > :not(router-outlet) {
+    padding: 1rem;
+  }
+
+  .content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Na tabela, o texto não quebra: ela rola para o lado */
+  .content th,
+  .content td {
+    white-space: nowrap;
   }
 
 }

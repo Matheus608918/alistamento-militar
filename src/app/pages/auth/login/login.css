@@ -38,11 +38,31 @@
   font-size: var(--texto-sm);
 }
 
+.esqueci {
+  display: inline-block;
+  margin-top: var(--esp-2);
+  font-size: var(--texto-sm);
+}
+
 .rodape {
   margin: var(--esp-5) 0 0 0;
   text-align: center;
   font-size: var(--texto-sm);
   color: var(--cor-texto-suave);
+}
+
+.rodape.privacidade {
+  margin-top: var(--esp-3);
+  font-size: var(--texto-xs);
+}
+
+.alerta-aviso {
+  padding: var(--esp-3) var(--esp-4);
+  margin-bottom: var(--esp-4);
+  background: var(--cor-alerta-suave);
+  color: var(--cor-alerta-texto);
+  border-radius: var(--raio-sm);
+  font-size: var(--texto-sm);
 }
 
 @media (max-width: 480px) {

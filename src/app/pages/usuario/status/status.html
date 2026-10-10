@@ -4,6 +4,10 @@
     Acompanhe abaixo todas as etapas do seu processo de alistamento militar.
 </p>
 
+<p class="tipo-alistamento" *ngIf="tipo && tipo !== '-'">
+    <span class="selo-tipo">{{ tipo }}</span>
+</p>
+
 <div class="timeline">
 
     <div class="etapa concluida">

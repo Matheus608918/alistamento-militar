@@ -1,11 +1,22 @@
+/*
+ Resposta do login (POST /auth/login).
+ role: USER, ADMIN ou MEDICO.
+ id e nome são opcionais: quando a API mandar, o front não precisa
+ buscar listas para descobrir quem entrou.
+ */
 export interface LoginResponse {
   token: string;
+  role?: string | null;
+  id?: number | null;
+  nome?: string | null;
 }
 
 export interface UsuarioApi {
   id: number;
   nome: string;
   dataNascimento: string;
+  sexo?: string | null;
+  nacionalidade?: string | null;
   email: string;
   telefone: string | null;
   cpf: string;
@@ -29,6 +40,8 @@ export interface UsuarioApi {
 export interface UsuarioRequest {
   nome: string;
   dataNascimento: string;
+  sexo: string;
+  nacionalidade: string;
   email: string;
   senha: string;
   telefone: string | null;
@@ -48,6 +61,8 @@ export interface UsuarioRequest {
   numeroResidencia: string | null;
   logradouro: string | null;
   estado: string | null;
+  // LGPD: o cidadão aceitou a Política de Privacidade no cadastro
+  consentimentoLgpd: boolean;
 }
 
 export interface AdministradorApi {
@@ -187,4 +202,15 @@ export interface AvaliacaoMedicaRequest {
   idAlistamento: number;
   idMedico: number;
   idLocal: number;
+}
+
+/*
+ Pedido de nova senha feito na tela "Esqueci minha senha".
+ O administrador vê os pedidos pendentes e redefine a senha.
+ */
+export interface PedidoSenhaApi {
+  id: number;
+  email: string;
+  dataPedido?: string | null;
+  status?: string | null;
 }

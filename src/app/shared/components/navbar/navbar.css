@@ -35,8 +35,22 @@
 
 @media (max-width: 600px) {
 
+  .navbar {
+    height: auto;
+    min-height: var(--altura-navbar);
+    padding: var(--esp-2) var(--esp-4);
+  }
+
   .logo {
     font-size: var(--texto-md);
+    line-height: 1.2;
+  }
+
+  .nome {
+    max-width: 40vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
 }

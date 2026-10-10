@@ -1,0 +1,67 @@
+.privacidade {
+  min-height: 100vh;
+  background: var(--cor-fundo);
+  padding: 2rem 1rem;
+}
+
+.documento {
+  max-width: 780px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: var(--sombra-sm);
+  line-height: 1.7;
+  color: var(--cor-texto);
+}
+
+.voltar {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: var(--texto-sm);
+}
+
+h1 {
+  color: var(--cor-primaria);
+  margin: 0 0 0.25rem;
+}
+
+.atualizacao {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+  margin-top: 0;
+}
+
+h2 {
+  color: var(--cor-primaria);
+  font-size: 1.15rem;
+  margin: 2rem 0 0.5rem;
+}
+
+ul {
+  padding-left: 1.25rem;
+}
+
+li {
+  margin-bottom: 0.4rem;
+}
+
+.nota {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cor-borda-suave);
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+@media (max-width: 600px) {
+
+  .privacidade {
+    padding: 1rem 0.75rem;
+  }
+
+  .documento {
+    padding: 1.25rem;
+  }
+
+}

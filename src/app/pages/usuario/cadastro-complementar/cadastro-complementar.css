@@ -253,3 +253,47 @@ button[type="submit"]:disabled{
 .cabecalho h1{
     color:#FFFFFF;
 }
+
+.resumo-alistamento{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px 24px;
+    margin:0 35px 10px;
+    padding:14px 18px;
+    border-radius:8px;
+    background:#E8F0E9;
+    color:#233E26;
+}
+
+.resumo-alistamento .tipo{
+    margin-left:auto;
+    padding:4px 12px;
+    border-radius:999px;
+    background:#2F5233;
+    color:#FFFFFF;
+    font-weight:600;
+    font-size:14px;
+}
+
+.form-group small{
+    margin-top:6px;
+    color:#555;
+    font-size:13px;
+}
+
+.form-group small.aviso-cep{
+    color:#8B1A1A;
+}
+
+@media(max-width:600px){
+
+    .resumo-alistamento{
+        margin:0 20px 10px;
+    }
+
+    .resumo-alistamento .tipo{
+        margin-left:0;
+    }
+
+}

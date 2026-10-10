@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProgressBar } from './progress-bar';
+import { EsqueciSenha } from './esqueci-senha';
 
-describe('ProgressBar', () => {
-  let component: ProgressBar;
-  let fixture: ComponentFixture<ProgressBar>;
+describe('EsqueciSenha', () => {
+  let component: EsqueciSenha;
+  let fixture: ComponentFixture<EsqueciSenha>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProgressBar],
+      imports: [EsqueciSenha],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ProgressBar);
+    fixture = TestBed.createComponent(EsqueciSenha);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

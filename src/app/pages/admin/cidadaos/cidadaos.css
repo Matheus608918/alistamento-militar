@@ -142,3 +142,46 @@
   }
 
 }
+
+/* ----- Pedidos de nova senha ----- */
+
+.pedidos-senha {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--cor-alerta-suave);
+  border-left: 4px solid var(--cor-alerta);
+  border-radius: var(--raio-sm);
+}
+
+.pedidos-senha h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--cor-alerta-texto);
+}
+
+.pedidos-senha ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pedidos-senha li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pedidos-senha small {
+  color: var(--cor-texto-suave);
+}
+
+.dica-senha {
+  margin: 0.5rem 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}

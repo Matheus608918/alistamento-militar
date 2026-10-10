@@ -9,12 +9,32 @@
   gap: var(--esp-5);
 }
 
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: var(--esp-3);
+}
+
 .titulo {
   color: var(--cor-texto-inverso);
   font-size: var(--texto-lg);
   margin: 0;
-  padding-bottom: var(--esp-3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* O botão Menu só existe no celular */
+.botao-menu {
+  display: none;
+  padding: var(--esp-2) var(--esp-3);
+  background: transparent;
+  color: var(--cor-texto-inverso);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--raio-sm);
+  font-family: inherit;
+  font-size: var(--texto-sm);
+  cursor: pointer;
 }
 
 .menu {
@@ -70,12 +90,32 @@
 
   .sidebar {
     width: 100%;
-    padding: var(--esp-4);
+    padding: var(--esp-3) var(--esp-4);
+    gap: var(--esp-3);
   }
 
-  .menu {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .topo {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .botao-menu {
+    display: inline-block;
+  }
+
+  /* Menu fechado: esconde os links e o botão Sair */
+  .menu,
+  .rodape {
+    display: none;
+  }
+
+  .sidebar.aberto .menu,
+  .sidebar.aberto .rodape {
+    display: flex;
+  }
+
+  .sidebar.aberto .rodape {
+    flex-direction: column;
   }
 
 }

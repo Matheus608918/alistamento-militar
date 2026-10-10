@@ -1,85 +1,148 @@
-<h1>Criar Conta</h1>
+<div class="cadastro-container">
 
-<p>Preencha os dados abaixo para iniciar seu alistamento.</p>
+  <div class="cadastro-card">
 
-<form (ngSubmit)="cadastrar()">
+    <h1>Criar Conta</h1>
 
-  <div class="form-group">
-    <label>Nome Completo</label>
-    <input
-      type="text"
-      name="nome"
-      [(ngModel)]="usuario.nome"
-      placeholder="Digite seu nome"
-      required>
+    <p>Etapa 1 de 2. Preencha os dados abaixo para iniciar seu alistamento.</p>
+
+    <form (ngSubmit)="cadastrar()">
+
+      <div class="form-group">
+        <label for="cad-nome">Nome Completo</label>
+        <input
+          id="cad-nome"
+          type="text"
+          name="nome"
+          [(ngModel)]="usuario.nome"
+          placeholder="Digite seu nome"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-cpf">CPF</label>
+        <input
+          id="cad-cpf"
+          type="text"
+          name="cpf"
+          inputmode="numeric"
+          maxlength="14"
+          [(ngModel)]="usuario.cpf"
+          placeholder="000.000.000-00"
+          required>
+      </div>
+
+      <div class="linha">
+
+        <div class="form-group">
+          <label for="cad-nascimento">Data de Nascimento</label>
+          <input
+            id="cad-nascimento"
+            type="date"
+            name="dataNascimento"
+            [max]="dataMaxima"
+            [(ngModel)]="usuario.dataNascimento"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="cad-sexo">Sexo</label>
+          <select
+            id="cad-sexo"
+            name="sexo"
+            [(ngModel)]="usuario.sexo"
+            required>
+            <option value="">Selecione</option>
+            <option *ngFor="let sexo of sexos" [value]="sexo">{{ sexo }}</option>
+          </select>
+        </div>
+
+      </div>
+
+      <p class="aviso" *ngIf="aviso">{{ aviso }}</p>
+
+      <div class="form-group">
+        <label for="cad-nacionalidade">Nacionalidade</label>
+        <select
+          id="cad-nacionalidade"
+          name="nacionalidade"
+          [(ngModel)]="usuario.nacionalidade"
+          required>
+          <option value="">Selecione</option>
+          <option *ngFor="let nacionalidade of nacionalidades" [value]="nacionalidade">{{ nacionalidade }}</option>
+        </select>
+        <small>O alistamento é exclusivo para brasileiros natos ou naturalizados.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-email">E-mail</label>
+        <input
+          id="cad-email"
+          type="email"
+          name="email"
+          [(ngModel)]="usuario.email"
+          placeholder="email@exemplo.com"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-telefone">Telefone</label>
+        <input
+          id="cad-telefone"
+          type="tel"
+          name="telefone"
+          [(ngModel)]="usuario.telefone"
+          placeholder="(11) 99999-9999"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-senha">Senha</label>
+        <input
+          id="cad-senha"
+          type="password"
+          name="senha"
+          [(ngModel)]="usuario.senha"
+          placeholder="Mínimo de 6 caracteres"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-confirmar">Confirmar Senha</label>
+        <input
+          id="cad-confirmar"
+          type="password"
+          name="confirmarSenha"
+          [(ngModel)]="usuario.confirmarSenha"
+          placeholder="Confirme sua senha"
+          required>
+      </div>
+
+      <div class="consentimento">
+        <input
+          id="cad-consentimento"
+          type="checkbox"
+          name="consentimentoLgpd"
+          [(ngModel)]="usuario.consentimentoLgpd"
+          required>
+        <label for="cad-consentimento">
+          Li e concordo com a
+          <a routerLink="/privacidade" target="_blank">Política de Privacidade</a>
+          e autorizo o uso dos meus dados para o alistamento militar, conforme a LGPD (Lei nº 13.709/2018).
+        </label>
+      </div>
+
+      <button type="submit">
+        Continuar Cadastro
+      </button>
+
+    </form>
+
+    <span>
+      Já possui uma conta?
+      <a routerLink="/login">Entrar</a>
+    </span>
+
   </div>
 
-  <div class="form-group">
-    <label>CPF</label>
-    <input
-      type="text"
-      name="cpf"
-      [(ngModel)]="usuario.cpf"
-      placeholder="000.000.000-00"
-      required>
-  </div>
-
-  <div class="form-group">
-    <label>Data de Nascimento</label>
-    <input
-      type="date"
-      name="dataNascimento"
-      [(ngModel)]="usuario.dataNascimento"
-      required>
-  </div>
-
-  <div class="form-group">
-    <label>E-mail</label>
-    <input
-      type="email"
-      name="email"
-      [(ngModel)]="usuario.email"
-      placeholder="email@exemplo.com"
-      required>
-  </div>
-
-  <div class="form-group">
-    <label>Telefone</label>
-    <input
-      type="tel"
-      name="telefone"
-      [(ngModel)]="usuario.telefone"
-      placeholder="(11) 99999-9999"
-      required>
-  </div>
-
-  <div class="form-group">
-    <label>Senha</label>
-    <input
-      type="password"
-      name="senha"
-      [(ngModel)]="usuario.senha"
-      placeholder="Digite sua senha"
-      required>
-  </div>
-
-  <div class="form-group">
-    <label>Confirmar Senha</label>
-    <input
-      type="password"
-      name="confirmarSenha"
-      [(ngModel)]="usuario.confirmarSenha"
-      placeholder="Confirme sua senha"
-      required>
-  </div>
-
-  <button type="submit">
-    Continuar Cadastro
-  </button>
-
-</form>
-
-<span>
-  Já possui uma conta?
-  <a routerLink="/login">Entrar</a>
-</span>
+</div>

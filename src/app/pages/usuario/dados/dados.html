@@ -25,6 +25,21 @@
     </div>
 
     <div class="campo">
+        <label>Sexo</label>
+        <span>{{ usuario.sexo || '-' }}</span>
+    </div>
+
+    <div class="campo">
+        <label>Nacionalidade</label>
+        <span>{{ usuario.nacionalidade || '-' }}</span>
+    </div>
+
+    <div class="campo">
+        <label>Tipo de Alistamento</label>
+        <span>{{ usuario.tipoAlistamento || '-' }}</span>
+    </div>
+
+    <div class="campo">
         <label>Nome da Mãe</label>
         <span>{{ usuario.nomeMae || '-' }}</span>
     </div>
@@ -100,3 +115,16 @@
     </div>
 
 </div>
+
+<section class="lgpd" aria-labelledby="titulo-lgpd">
+
+    <h2 id="titulo-lgpd">Seus dados e a LGPD</h2>
+
+    <p>
+        Seus dados são usados somente para o alistamento militar. Você pode pedir a correção
+        de dados errados ou a exclusão do cadastro à administração da Junta de Serviço Militar.
+    </p>
+
+    <a routerLink="/privacidade">Ler a Política de Privacidade</a>
+
+</section>

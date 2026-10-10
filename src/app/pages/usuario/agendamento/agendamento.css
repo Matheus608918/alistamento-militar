@@ -93,3 +93,11 @@ button:disabled{
     color:#2e7d32;
     font-weight:600;
 }
+/* Celular */
+@media(max-width:600px){
+
+    .sem-agendamento{
+        padding:20px;
+    }
+
+}

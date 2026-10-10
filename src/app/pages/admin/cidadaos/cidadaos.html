@@ -10,6 +10,37 @@
 
     <p class="aviso" *ngIf="erro" role="alert">{{ erro }}</p>
 
+    <section
+        class="pedidos-senha"
+        *ngIf="pedidosSenha.length > 0"
+        aria-labelledby="titulo-pedidos-senha">
+
+        <h2 id="titulo-pedidos-senha">Pedidos de nova senha ({{ pedidosSenha.length }})</h2>
+
+        <ul>
+
+            <li *ngFor="let pedido of pedidosSenha">
+
+                <span>
+                    <strong>{{ pedido.email }}</strong>
+                    <small *ngIf="pedido.dataPedido"> — pedido em {{ formatarData(pedido.dataPedido) }}</small>
+                </span>
+
+                <app-button
+                    variante="primario"
+                    tamanho="pequeno"
+                    (acionar)="atenderPedido(pedido)">
+
+                    Redefinir senha
+
+                </app-button>
+
+            </li>
+
+        </ul>
+
+    </section>
+
     <div
         class="filtros"
         role="search">
@@ -50,6 +81,23 @@
 
         </div>
 
+        <div class="campo-filtro">
+
+            <label for="campo-sexo">Sexo</label>
+
+            <select
+                id="campo-sexo"
+                [(ngModel)]="filtroSexo"
+                (change)="filtrar()">
+
+                <option value="Todos">Todos</option>
+                <option value="Masculino">Masculino (obrigatório)</option>
+                <option value="Feminino">Feminino (voluntário)</option>
+
+            </select>
+
+        </div>
+
     </div>
 
     <div class="tabela">
@@ -66,6 +114,7 @@
                     <th scope="col">Nome</th>
                     <th scope="col">CPF</th>
                     <th scope="col">E-mail</th>
+                    <th scope="col">Alistamento</th>
                     <th scope="col">Situação</th>
                     <th scope="col">Ações</th>
                 </tr>
@@ -76,7 +125,7 @@
 
                 <tr *ngIf="usuariosFiltrados.length === 0">
 
-                    <td colspan="5" class="vazio">
+                    <td colspan="6" class="vazio">
                         Nenhum cidadão encontrado.
                     </td>
 
@@ -86,9 +135,11 @@
 
                     <td>{{ usuario.nome }}</td>
 
-                    <td>{{ exibirCpf(usuario.cpf) }}</td>
+                    <td>{{ mascararCpf(usuario.cpf) }}</td>
 
                     <td>{{ usuario.email }}</td>
+
+                    <td>{{ usuario.tipoAlistamento }}</td>
 
                     <td>
                         <app-status-badge
@@ -225,6 +276,15 @@
 
                         <dt>Nascimento</dt>
                         <dd>{{ cidadao.dataNascimento || '-' }}</dd>
+
+                        <dt>Sexo</dt>
+                        <dd>{{ cidadao.sexo || '-' }}</dd>
+
+                        <dt>Nacionalidade</dt>
+                        <dd>{{ cidadao.nacionalidade || '-' }}</dd>
+
+                        <dt>Alistamento</dt>
+                        <dd>{{ cidadao.tipoAlistamento }}</dd>
 
                         <dt>Situação</dt>
                         <dd>
@@ -379,6 +439,15 @@
 
             <app-button
                 *ngIf="usuarioSelecionado"
+                variante="secundario"
+                (acionar)="abrirRedefinirSenha(usuarioSelecionado)">
+
+                Redefinir senha
+
+            </app-button>
+
+            <app-button
+                *ngIf="usuarioSelecionado"
                 variante="perigo"
                 (acionar)="excluir(usuarioSelecionado)">
 
@@ -409,7 +478,7 @@
             <p class="resumo">
 
                 <strong>{{ cidadao.nome }}</strong>
-                — CPF {{ exibirCpf(cidadao.cpf) }}
+                — CPF {{ mascararCpf(cidadao.cpf) }}
 
             </p>
 
@@ -515,6 +584,77 @@
                 (acionar)="fecharAgendamento()">
 
                 Cancelar
+
+            </app-button>
+
+        </ng-container>
+
+    </app-modal>
+
+    <app-modal
+        [aberto]="mostrarSenha"
+        titulo="Redefinir senha"
+        largura="pequena"
+        (fechar)="fecharRedefinirSenha()">
+
+        <div *ngIf="usuarioSenha as cidadao">
+
+            <p class="resumo">
+
+                <strong>{{ cidadao.nome }}</strong>
+                — {{ cidadao.email }}
+
+            </p>
+
+            <p class="aviso" *ngIf="erroSenha" role="alert">{{ erroSenha }}</p>
+
+            <div class="campo">
+
+                <label for="nova-senha">Nova senha</label>
+
+                <input
+                    id="nova-senha"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Mínimo de 6 caracteres"
+                    [(ngModel)]="novaSenha">
+
+            </div>
+
+            <div class="campo">
+
+                <label for="confirmar-nova-senha">Confirmar nova senha</label>
+
+                <input
+                    id="confirmar-nova-senha"
+                    type="text"
+                    autocomplete="off"
+                    [(ngModel)]="confirmarNovaSenha">
+
+            </div>
+
+            <p class="dica-senha">
+                Use "Gerar senha temporária" e passe a senha ao cidadão por um canal seguro.
+            </p>
+
+        </div>
+
+        <ng-container rodape>
+
+            <app-button
+                variante="secundario"
+                (acionar)="gerarSenhaTemporaria()">
+
+                Gerar senha temporária
+
+            </app-button>
+
+            <app-button
+                variante="primario"
+                [carregando]="salvandoSenha"
+                (acionar)="salvarNovaSenha()">
+
+                Salvar nova senha
 
             </app-button>
 

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ApiService, mensagemErro } from '../../../services/api.service';
 import { Processo, ProcessoService } from '../../../services/processo.service';
 import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
+import { mascararCpf } from '../../../shared/utils/validadores';
 
 interface LinhaAgendamento {
   id: number;
@@ -25,6 +26,9 @@ interface LinhaAgendamento {
   styleUrl: './agendamentos.css'
 })
 export class Agendamentos implements OnInit {
+
+  // LGPD: nas listas o CPF aparece mascarado
+  readonly mascararCpf = mascararCpf;
 
   private api = inject(ApiService);
   private processoService = inject(ProcessoService);

@@ -101,3 +101,17 @@
     }
 
 }
+
+.tipo-alistamento{
+    margin:-10px 0 24px;
+}
+
+.selo-tipo{
+    display:inline-block;
+    padding:4px 12px;
+    border-radius:999px;
+    background:#2F5233;
+    color:#FFFFFF;
+    font-weight:600;
+    font-size:14px;
+}

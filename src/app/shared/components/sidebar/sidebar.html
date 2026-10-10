@@ -1,10 +1,27 @@
 <nav
     class="sidebar"
+    [class.aberto]="aberto"
     aria-label="Navegação principal">
 
-    <h2 class="titulo">Alistamento</h2>
+    <div class="topo">
 
-    <ul class="menu">
+        <h2 class="titulo">Alistamento</h2>
+
+        <!-- Botão que só aparece no celular -->
+        <button
+            type="button"
+            class="botao-menu"
+            aria-controls="menu-principal"
+            [attr.aria-expanded]="aberto"
+            (click)="alternar()">
+
+            {{ aberto ? 'Fechar' : 'Menu' }}
+
+        </button>
+
+    </div>
+
+    <ul class="menu" id="menu-principal">
 
         <li *ngFor="let item of itens()">
 
@@ -12,7 +29,8 @@
                 [routerLink]="item.rota"
                 routerLinkActive="ativo"
                 [routerLinkActiveOptions]="{ exact: true }"
-                ariaCurrentWhenActive="page">
+                ariaCurrentWhenActive="page"
+                (click)="fechar()">
 
                 {{ item.texto }}
 

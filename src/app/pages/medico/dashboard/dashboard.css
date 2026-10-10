@@ -6,7 +6,7 @@
 }
 
 .dashboard{
-    padding:30px;
+    padding:0;
     background:#f5f7fa;
     min-height:100vh;
 }
@@ -101,10 +101,6 @@ tr:hover{
 }
 
 @media(max-width:768px){
-
-    .dashboard{
-        padding:20px;
-    }
 
     .cards{
         grid-template-columns:1fr;

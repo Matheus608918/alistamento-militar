@@ -8,6 +8,8 @@ import { MainLayout } from './layouts/main-layout/main-layout';
 import { Home } from './pages/home/home';
 
 import { Login } from './pages/auth/login/login';
+import { Privacidade } from './pages/privacidade/privacidade';
+import { EsqueciSenha } from './pages/auth/esqueci-senha/esqueci-senha';
 import { Cadastro } from './pages/auth/cadastro/cadastro';
 import { CadastroComplementar } from './pages/usuario/cadastro-complementar/cadastro-complementar';
 
@@ -42,6 +44,18 @@ export const routes: Routes = [
     path: 'login',
     component: Login,
     title: 'Entrar'
+  },
+
+  {
+    path: 'esqueci-senha',
+    component: EsqueciSenha,
+    title: 'Esqueci minha senha'
+  },
+
+  {
+    path: 'privacidade',
+    component: Privacidade,
+    title: 'Política de Privacidade'
   },
 
   {

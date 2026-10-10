@@ -7,14 +7,21 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 
 import { ApiService, mensagemErro } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth';
 import { CadastroRascunhoService } from '../../../services/cadastro-rascunho.service';
+import { CepService } from '../../../services/cep.service';
 import { ProcessoService } from '../../../services/processo.service';
 import { UsuarioRequest } from '../../../models/api.models';
 import { vazioParaNull } from '../../../shared/utils/formatadores';
+import {
+  cepValido,
+  cpfValido,
+  erroIdadeAlistamento,
+  formatarCep,
+  rgValido
+} from '../../../shared/utils/validadores';
 
 @Component({
   selector: 'app-cadastro-complementar',
@@ -36,8 +43,25 @@ export class CadastroComplementar {
   private auth = inject(AuthService);
   private rascunho = inject(CadastroRascunhoService);
   private processoService = inject(ProcessoService);
+  private cepService = inject(CepService);
 
   enviando = false;
+
+  buscandoCep = false;
+
+  avisoCep = '';
+
+  private ultimoCepBuscado = '';
+
+  readonly sexo = this.rascunho.obter()?.sexo ?? '';
+
+  readonly nacionalidade = this.rascunho.obter()?.nacionalidade ?? '';
+
+  get tipoAlistamento(): string {
+    return this.sexo === 'Feminino'
+      ? 'Alistamento voluntário'
+      : 'Alistamento obrigatório';
+  }
 
   cadastroForm: FormGroup;
 
@@ -92,15 +116,59 @@ export class CadastroComplementar {
 
   }
 
+  async aoDigitarCep(): Promise<void> {
+
+    const cep = String(this.cadastroForm.value.cep || '').replace(/\D/g, '');
+
+    if (cep.length !== 8) {
+      this.avisoCep = '';
+      return;
+    }
+
+    if (cep === this.ultimoCepBuscado) {
+      return;
+    }
+
+    this.ultimoCepBuscado = cep;
+    this.buscandoCep = true;
+    this.avisoCep = '';
+    this.cdr.markForCheck();
+
+    try {
+
+      const endereco = await this.cepService.buscar(cep);
+
+      if (!endereco) {
+        this.avisoCep = 'CEP não encontrado. Confira o número ou preencha o endereço manualmente.';
+        return;
+      }
+
+      this.cadastroForm.patchValue({
+        cep: formatarCep(cep),
+        logradouro: endereco.logradouro,
+        bairro: endereco.bairro,
+        municipio: endereco.municipio,
+        uf: endereco.uf
+      });
+
+    } catch {
+
+      this.avisoCep = 'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.';
+
+    } finally {
+
+      this.buscandoCep = false;
+      this.cdr.markForCheck();
+
+    }
+
+  }
+
   validarFormulario(): boolean {
 
     const nomeRegex = /^[A-Za-zÀ-ÿ\s]+$/;
 
-    const rgRegex = /^[0-9.\-xX]{7,15}$/;
-
     const telefoneRegex = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
-
-    const cepRegex = /^\d{5}-?\d{3}$/;
 
     const ufRegex = /^[A-Za-z]{2}$/;
 
@@ -127,8 +195,20 @@ export class CadastroComplementar {
       return false;
     }
 
-    if (!rgRegex.test(valores.rg)) {
-      alert('RG inválido.');
+    if (!cpfValido(valores.cpf)) {
+      alert('CPF inválido.');
+      return false;
+    }
+
+    if (!rgValido(valores.rg)) {
+      alert('RG inválido. Use apenas números (de 6 a 14 dígitos), podendo terminar com X.');
+      return false;
+    }
+
+    const erroIdade = erroIdadeAlistamento(valores.dataNascimento, this.sexo);
+
+    if (erroIdade) {
+      alert(erroIdade);
       return false;
     }
 
@@ -137,8 +217,8 @@ export class CadastroComplementar {
       return false;
     }
 
-    if (valores.cep && !cepRegex.test(valores.cep)) {
-      alert('CEP inválido.');
+    if (valores.cep && !cepValido(valores.cep)) {
+      alert('CEP inválido. Ele deve ter 8 números.');
       return false;
     }
 
@@ -184,6 +264,8 @@ export class CadastroComplementar {
     const dto: UsuarioRequest = {
       nome: v.nome.trim(),
       dataNascimento: v.dataNascimento,
+      sexo: etapa1.sexo,
+      nacionalidade: etapa1.nacionalidade,
       email: v.email.trim(),
       senha: etapa1.senha,
       telefone: vazioParaNull(v.telefone),
@@ -195,14 +277,15 @@ export class CadastroComplementar {
       escolaridade: vazioParaNull(v.escolaridade),
       rg: vazioParaNull(v.rg),
       localNascimento: vazioParaNull(v.localNascimento),
-      cep: vazioParaNull(v.cep),
+      cep: vazioParaNull(v.cep) ? formatarCep(v.cep) : null,
       bairro: vazioParaNull(v.bairro),
       municipio: vazioParaNull(v.municipio),
       paisResidencia: vazioParaNull(v.pais),
       zonaResidencial: vazioParaNull(v.zonaResidencial),
       numeroResidencia: vazioParaNull(v.numero),
       logradouro: vazioParaNull(v.logradouro),
-      estado: uf
+      estado: uf,
+      consentimentoLgpd: etapa1.consentimentoLgpd
     };
 
     this.enviando = true;
@@ -228,13 +311,7 @@ export class CadastroComplementar {
 
     } catch (erro) {
 
-      if (erro instanceof HttpErrorResponse && erro.status === 400) {
-        alert('Este e-mail já está cadastrado.');
-      } else if (erro instanceof HttpErrorResponse && erro.status !== 0) {
-        alert('Não foi possível concluir o cadastro. Verifique se o CPF já não está cadastrado.');
-      } else {
-        alert(mensagemErro(erro, 'Não foi possível concluir o cadastro.'));
-      }
+      alert(mensagemErro(erro, 'Não foi possível concluir o cadastro.'));
 
     } finally {
 

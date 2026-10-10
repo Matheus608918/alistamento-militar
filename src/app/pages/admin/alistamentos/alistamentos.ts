@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { mensagemErro } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth';
 import { CidadaoView, ProcessoService } from '../../../services/processo.service';
+import { mascararCpf } from '../../../shared/utils/validadores';
 
 @Component({
   selector: 'app-alistamentos',
@@ -13,6 +14,9 @@ import { CidadaoView, ProcessoService } from '../../../services/processo.service
   styleUrl: './alistamentos.css'
 })
 export class Alistamentos implements OnInit {
+
+  // LGPD: nas listas o CPF aparece mascarado
+  readonly mascararCpf = mascararCpf;
 
   private auth = inject(AuthService);
   private processoService = inject(ProcessoService);

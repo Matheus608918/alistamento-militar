@@ -1,0 +1,88 @@
+<main class="privacidade">
+
+    <article class="documento">
+
+        <a class="voltar" routerLink="/">← Voltar ao início</a>
+
+        <h1>Política de Privacidade</h1>
+
+        <p class="atualizacao">Última atualização: {{ atualizadaEm }}</p>
+
+        <p>
+            Esta política explica como o Sistema Web de Alistamento Militar trata os seus dados pessoais,
+            de acordo com a Lei Geral de Proteção de Dados Pessoais (LGPD — Lei nº 13.709/2018).
+        </p>
+
+        <h2>1. Quais dados coletamos</h2>
+
+        <ul>
+            <li><strong>Identificação:</strong> nome, CPF, RG, data de nascimento, sexo, nacionalidade, nome do pai e da mãe, estado civil, escolaridade e local de nascimento.</li>
+            <li><strong>Contato e endereço:</strong> e-mail, telefone, CEP, logradouro, número, bairro, município, UF, país e zona de residência.</li>
+            <li><strong>Documentos enviados</strong> para o alistamento.</li>
+            <li><strong>Dados de saúde:</strong> o resultado e as observações da avaliação médica.</li>
+            <li><strong>Acesso:</strong> e-mail e senha. A senha é guardada criptografada e ninguém consegue lê-la, nem os administradores.</li>
+        </ul>
+
+        <h2>2. Para que usamos os dados</h2>
+
+        <p>
+            Os dados são usados somente para realizar o alistamento militar: conferir se a pessoa pode se alistar,
+            analisar os documentos, agendar e registrar a avaliação médica e informar o resultado.
+            O alistamento é previsto na Lei do Serviço Militar (Lei nº 4.375/1964). Para mulheres, o alistamento é
+            voluntário (Decreto nº 12.154/2024).
+        </p>
+
+        <p>
+            A base legal é o cumprimento de obrigação legal (art. 7º, II, da LGPD) e o seu consentimento,
+            dado no momento do cadastro. Os dados de saúde são tratados apenas para a avaliação médica
+            (art. 11 da LGPD).
+        </p>
+
+        <h2>3. Quem pode ver os seus dados</h2>
+
+        <ul>
+            <li><strong>Você</strong> vê todos os seus dados na tela "Meus dados".</li>
+            <li><strong>Administradores</strong> veem os dados necessários para analisar o alistamento. Nas listas, o CPF aparece mascarado (ex.: ***.456.789-**).</li>
+            <li><strong>Médicos</strong> veem apenas o necessário para a avaliação médica.</li>
+        </ul>
+
+        <p>Os dados não são vendidos nem compartilhados com empresas.</p>
+
+        <h2>4. Como protegemos os dados</h2>
+
+        <ul>
+            <li>Acesso com login e senha, e senha criptografada.</li>
+            <li>Após o login, cada acesso usa um token JWT que vence em 2 horas. Depois disso é preciso entrar de novo.</li>
+            <li>Cada perfil (cidadão, médico e administrador) só acessa as telas e informações da sua função.</li>
+            <li>CPF, RG e CEP são guardados de forma protegida no banco de dados.</li>
+        </ul>
+
+        <h2>5. Seus direitos</h2>
+
+        <p>Pela LGPD (art. 18), você pode pedir:</p>
+
+        <ul>
+            <li>confirmação de que tratamos seus dados e acesso a eles;</li>
+            <li>correção de dados incompletos, errados ou desatualizados;</li>
+            <li>informação sobre com quem os dados foram compartilhados;</li>
+            <li>revogação do consentimento e exclusão dos dados, exceto quando a lei exigir que sejam mantidos.</li>
+        </ul>
+
+        <p>
+            Para isso, procure a administração da Junta de Serviço Militar responsável pelo seu alistamento.
+        </p>
+
+        <h2>6. Por quanto tempo guardamos</h2>
+
+        <p>
+            Os dados ficam guardados enquanto forem necessários para o alistamento e pelo prazo exigido
+            pela legislação militar.
+        </p>
+
+        <p class="nota">
+            Este sistema foi desenvolvido como Trabalho de Conclusão de Curso (TCC).
+        </p>
+
+    </article>
+
+</main>

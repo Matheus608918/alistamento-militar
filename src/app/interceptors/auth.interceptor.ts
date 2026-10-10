@@ -1,14 +1,23 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
 
 import { API_BASE_URL } from '../core/api-config';
 import { AuthService } from '../services/auth';
 
+/*
+ Interceptor do JWT.
+ Toda requisição para a API (menos login e cadastro) sai com o cabeçalho
+ "Authorization: Bearer <token>". O token é gerado pela API no login,
+ vale 2 horas e é conferido pela API em toda requisição.
+ */
 const ROTAS_PUBLICAS = [
   'POST /usuario',
   'POST /usuario/login',
   'POST /medico/login',
-  'POST /administrador/login'
+  'POST /administrador/login',
+  'POST /auth/login',
+  'POST /recuperacao-senha'
 ];
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -25,8 +34,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const auth = inject(AuthService);
 
+  // Token vencido: encerra a sessão antes mesmo de chamar a API
   if (auth.token && !auth.tokenValido()) {
-    auth.sair();
+    auth.sair(true);
     return next(req);
   }
 
@@ -36,13 +46,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const valor = `Bearer ${token}`;
-
   return next(req.clone({
     setHeaders: {
-      Authorization: valor,
-      Authentization: valor
+      Authorization: `Bearer ${token}`
     }
-  }));
+  })).pipe(
+
+    catchError((erro: unknown) => {
+
+      // 401: a API recusou o token (vencido, alterado ou usuário removido)
+      if (erro instanceof HttpErrorResponse && erro.status === 401) {
+        auth.sair(true);
+      }
+
+      return throwError(() => erro);
+
+    })
+
+  );
 
 };

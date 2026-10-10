@@ -97,6 +97,14 @@ export class Medicos implements OnInit {
 
     }
 
+    // Na edição, a senha só muda se o admin digitar uma nova (recuperação de senha do médico)
+    if (this.medico.senha && this.medico.senha.length < 6) {
+
+      alert('A senha precisa ter pelo menos 6 caracteres.');
+      return;
+
+    }
+
     const dto: MedicoRequest = {
       nomeMedico: this.medico.nome.trim(),
       emailMedico: this.medico.email.trim(),
@@ -112,7 +120,10 @@ export class Medicos implements OnInit {
 
       if (this.editando && this.idEdicao !== null) {
 
-        await this.api.atualizarMedico(this.idEdicao, dto);
+        await this.api.atualizarMedico(
+          this.idEdicao,
+          this.medico.senha ? { ...dto, senhaMedico: this.medico.senha } : dto
+        );
 
         alert('Médico atualizado com sucesso.');
 

@@ -30,6 +30,9 @@ export class Relatorios implements OnInit {
   reprovados = 0;
   emAnalise = 0;
 
+  masculinos = 0;
+  femininos = 0;
+
   ngOnInit(): void {
     this.carregarRelatorio();
   }
@@ -54,7 +57,16 @@ export class Relatorios implements OnInit {
       this.reprovados = 0;
       this.emAnalise = 0;
 
+      this.masculinos = 0;
+      this.femininos = 0;
+
       processos.forEach(processo => {
+
+        if (processo.usuario.sexo === 'Feminino') {
+          this.femininos++;
+        } else if (processo.usuario.sexo === 'Masculino') {
+          this.masculinos++;
+        }
 
         this.totalDocumentos += processo.documentos.length;
 
@@ -102,6 +114,8 @@ export class Relatorios implements OnInit {
 ===== RELATÓRIO DO SISTEMA =====
 
 Cidadãos: ${this.totalUsuarios}
+  Masculino (obrigatório): ${this.masculinos}
+  Feminino (voluntário): ${this.femininos}
 Médicos: ${this.totalMedicos}
 
 Documentos: ${this.totalDocumentos}

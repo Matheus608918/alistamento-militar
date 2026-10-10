@@ -8,6 +8,16 @@
             Acompanhe abaixo o andamento do seu processo de alistamento militar.
         </p>
 
+        <p class="tipo-alistamento" *ngIf="tipoAlistamento && tipoAlistamento !== '-'">
+
+            <span class="selo-tipo">{{ tipoAlistamento }}</span>
+
+            {{ feminino
+                ? 'O serviço militar feminino é voluntário. Você pode desistir até a data da incorporação.'
+                : 'O alistamento é obrigatório para homens a partir do ano em que completam 18 anos.' }}
+
+        </p>
+
     </div>
 
     <p class="aviso" *ngIf="carregando">Carregando informações...</p>

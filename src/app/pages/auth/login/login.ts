@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../services/auth';
 import { Button } from '../../../shared/components/button/button';
@@ -18,11 +18,12 @@ import { Button } from '../../../shared/components/button/button';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
+export class Login implements OnInit {
 
   private auth = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private rota = inject(ActivatedRoute);
 
   login = {
     email: '',
@@ -33,9 +34,21 @@ export class Login {
 
   carregando = false;
 
+  // Aviso mostrado quando o token JWT venceu (a sessão dura 2 horas)
+  aviso = '';
+
+  ngOnInit(): void {
+
+    if (this.rota.snapshot.queryParamMap.get('sessao') === 'expirada') {
+      this.aviso = 'Sua sessão expirou. Entre novamente para continuar.';
+    }
+
+  }
+
   async entrar(): Promise<void> {
 
     this.erro = '';
+    this.aviso = '';
 
     if (!this.login.email.trim() || !this.login.senha) {
 

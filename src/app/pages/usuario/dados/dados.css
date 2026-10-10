@@ -53,3 +53,35 @@ span{
     border-radius:8px;
     margin-bottom:16px;
 }
+.lgpd{
+    margin-top:25px;
+    padding:20px 25px;
+    background:#E8F0E9;
+    border-left:4px solid #2F5233;
+    border-radius:10px;
+    line-height:1.6;
+}
+
+.lgpd h2{
+    color:#2F5233;
+    font-size:18px;
+    margin-bottom:8px;
+}
+
+.lgpd p{
+    color:#444;
+    margin-bottom:10px;
+}
+
+.lgpd a{
+    font-weight:bold;
+}
+
+/* Celular */
+@media(max-width:600px){
+
+    .card{
+        padding:20px;
+    }
+
+}

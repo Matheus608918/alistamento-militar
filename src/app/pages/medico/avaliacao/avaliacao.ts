@@ -9,6 +9,7 @@ import { CidadaoView, ProcessoService } from '../../../services/processo.service
 import { ResultadoAvaliacao } from '../../../models/api.models';
 import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
 import { hojeIso, vazioParaNull } from '../../../shared/utils/formatadores';
+import { mascararCpf } from '../../../shared/utils/validadores';
 
 @Component({
   selector: 'app-avaliacao',
@@ -21,6 +22,9 @@ import { hojeIso, vazioParaNull } from '../../../shared/utils/formatadores';
   styleUrl: './avaliacao.css'
 })
 export class Avaliacao implements OnInit {
+
+  // LGPD: nas listas o CPF aparece mascarado
+  readonly mascararCpf = mascararCpf;
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
