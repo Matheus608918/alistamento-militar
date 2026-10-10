@@ -37,7 +37,7 @@
     width:28px;
     height:28px;
     border-radius:50%;
-    background:#cfcfcf;
+    background:#9E9E9E;
     margin-right:20px;
     transition:.3s;
 }
@@ -70,16 +70,16 @@
 .linha{
     width:4px;
     height:45px;
-    background:#d0d0d0;
+    background:#B0B0B0;
     margin-left:12px;
 }
 
 .concluida .circulo{
-    background:#28a745;
+    background:#1E7E34;
 }
 
 .concluida .conteudo{
-    border-left:5px solid #28a745;
+    border-left:5px solid #1E7E34;
 }
 
 .andamento .circulo{

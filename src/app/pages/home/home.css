@@ -246,3 +246,21 @@ align-items:center;
 }
 
 }
+
+.hero h1{
+    color:#FFFFFF;
+}
+
+.hero-buttons a:hover{
+    text-decoration:none;
+}
+
+.btn-primary:hover{
+    color:#2F5233;
+    background:#E8F0E9;
+}
+
+.btn-secondary:hover{
+    color:#2F5233;
+    background:#FFFFFF;
+}

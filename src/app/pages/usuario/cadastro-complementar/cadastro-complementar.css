@@ -249,3 +249,7 @@ button[type="submit"]:disabled{
     margin-top:16px;
     text-align:center;
 }
+
+.cabecalho h1{
+    color:#FFFFFF;
+}

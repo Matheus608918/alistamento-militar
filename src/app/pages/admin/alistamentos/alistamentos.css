@@ -61,11 +61,12 @@ button:hover{
 }
 
 .btn-analise{
-    background:#f0ad4e;
+    background:#FFC107;
+    color:#3D2C00;
 }
 
 .btn-aprovar{
-    background:#28a745;
+    background:#1E7E34;
 }
 
 .btn-reprovar{

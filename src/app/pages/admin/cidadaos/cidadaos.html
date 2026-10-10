@@ -282,13 +282,13 @@
 
                     <h3>Documentos</h3>
 
-                    <p *ngIf="!cidadao.documentos?.length">
+                    <p *ngIf="!cidadao.documentos.length">
                         Nenhum documento enviado.
                     </p>
 
                     <ul
                         class="lista-documentos"
-                        *ngIf="cidadao.documentos?.length">
+                        *ngIf="cidadao.documentos.length">
 
                         <li *ngFor="let doc of cidadao.documentos">
 

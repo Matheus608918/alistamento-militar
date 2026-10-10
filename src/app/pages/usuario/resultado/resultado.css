@@ -113,3 +113,8 @@ button:hover{
     background:#244228;
 
 }
+
+.status h2{
+    color:inherit;
+    margin:0;
+}

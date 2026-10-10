@@ -214,6 +214,10 @@ export class ApiService {
     return this.delete<AgendamentoApi>(`/agendamentos/${id}`);
   }
 
+  confirmarPresenca(id: number): Promise<AgendamentoApi> {
+    return this.patch<AgendamentoApi>(`/agendamentos/${id}/confirmar`, {});
+  }
+
   listarAvaliacoes(): Promise<AvaliacaoMedicaApi[]> {
     return this.get<AvaliacaoMedicaApi[]>('/avaliacoes-medicas');
   }

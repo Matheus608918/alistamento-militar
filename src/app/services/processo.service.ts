@@ -36,6 +36,7 @@ export interface AgendamentoView {
   local: string;
   endereco: string;
   medico: string;
+  confirmado: boolean;
   status: string;
 }
 
@@ -313,7 +314,10 @@ export class ProcessoService {
             medico: agendamento.medicoResponseDTO?.nomeMedico
               ?? avaliacao?.medicoResponseDTO?.nomeMedico
               ?? '',
-            status: avaliacao ? 'Concluído' : 'Agendado'
+            confirmado: agendamento.confirmado ?? false,
+            status: avaliacao
+              ? 'Concluído'
+              : agendamento.confirmado ? 'Presença confirmada' : 'Agendado'
           }
         : null,
       avaliacao: avaliacao

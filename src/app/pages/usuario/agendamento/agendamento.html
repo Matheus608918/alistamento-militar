@@ -76,6 +76,20 @@
 
         </div>
 
+        <button
+            *ngIf="podeConfirmar"
+            type="button"
+            [disabled]="confirmando"
+            (click)="confirmarPresenca()">
+
+            {{ confirmando ? 'Confirmando...' : 'Confirmar presença' }}
+
+        </button>
+
+        <p class="confirmado" *ngIf="agendamento.confirmado && !avaliacaoConcluida">
+            ✓ Presença confirmada. Compareça no dia e horário marcados.
+        </p>
+
     </ng-container>
 
     <ng-template #semAgendamento>

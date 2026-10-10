@@ -73,7 +73,7 @@
 
 .variante-alerta {
   background: var(--cor-alerta);
-  color: var(--cor-alerta-texto);
+  color: #3D2C00;
 }
 
 .variante-texto {
