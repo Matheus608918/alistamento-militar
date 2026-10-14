@@ -1,0 +1,51 @@
+<app-modal
+    [aberto]="idDocumento !== null"
+    [titulo]="titulo"
+    largura="grande"
+    (fechar)="aoFechar()">
+
+    <p class="estado" *ngIf="carregando">Carregando arquivo...</p>
+
+    <p class="erro" *ngIf="erro" role="alert">{{ erro }}</p>
+
+    <img
+        *ngIf="tipo === 'imagem'"
+        class="imagem"
+        [src]="urlImagem"
+        [alt]="titulo">
+
+    <iframe
+        *ngIf="tipo === 'pdf' && urlPdf"
+        class="pdf"
+        [src]="urlPdf"
+        [title]="titulo">
+    </iframe>
+
+    <p class="estado" *ngIf="tipo === 'outro'">
+        Este tipo de arquivo não pode ser exibido aqui. Use o botão "Baixar arquivo".
+    </p>
+
+    <ng-container rodape>
+
+        <a
+            *ngIf="urlBaixar"
+            class="baixar"
+            [href]="urlBaixar"
+            download>
+
+            Baixar arquivo
+
+        </a>
+
+        <button
+            type="button"
+            class="botao-fechar"
+            (click)="aoFechar()">
+
+            Fechar
+
+        </button>
+
+    </ng-container>
+
+</app-modal>

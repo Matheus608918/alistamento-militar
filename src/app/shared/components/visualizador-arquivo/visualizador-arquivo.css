@@ -1,0 +1,58 @@
+.imagem {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+  border-radius: var(--raio-sm);
+}
+
+.pdf {
+  display: block;
+  width: 100%;
+  height: 70vh;
+  border: 1px solid var(--cor-borda-suave);
+  border-radius: var(--raio-sm);
+}
+
+.estado {
+  color: var(--cor-texto-suave);
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.erro {
+  background: var(--cor-perigo-suave);
+  color: #8B1A1A;
+  padding: 0.75rem 1rem;
+  border-radius: var(--raio-sm);
+}
+
+.baixar,
+.botao-fechar {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--raio-sm);
+  font-size: var(--texto-sm);
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.baixar {
+  background: var(--cor-primaria);
+  color: #fff;
+}
+
+.botao-fechar {
+  background: transparent;
+  border: 1px solid var(--cor-borda-suave);
+  color: var(--cor-texto);
+}
+
+@media (max-width: 600px) {
+
+  .pdf {
+    height: 60vh;
+  }
+
+}

@@ -87,3 +87,18 @@ button:hover{
     border-radius:8px;
     margin-bottom:16px;
 }
+
+/* Botão que abre o arquivo enviado pelo cidadão */
+.btn-ver{
+    background:#2F5233;
+    padding:8px 12px;
+    margin:0 0 4px 0;
+    font-size:14px;
+}
+
+.nome-arquivo{
+    display:block;
+    color:#666;
+    font-size:12px;
+    word-break:break-all;
+}

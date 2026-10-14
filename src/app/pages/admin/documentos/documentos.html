@@ -48,7 +48,20 @@
 
             <td>{{ documento.numero }}</td>
 
-            <td>{{ documento.nomeArquivo }}</td>
+            <td>
+
+                <button
+                    type="button"
+                    class="btn-ver"
+                    (click)="verArquivo(documento)">
+
+                    Ver arquivo
+
+                </button>
+
+                <small class="nome-arquivo">{{ documento.nomeArquivo }}</small>
+
+            </td>
 
             <td>{{ documento.dataEnvio }}</td>
 
@@ -89,3 +102,9 @@
     </tbody>
 
 </table>
+
+<app-visualizador-arquivo
+    [idDocumento]="documentoAberto?.id ?? null"
+    [titulo]="documentoAberto ? documentoAberto.tipo + ' — ' + documentoAberto.usuario : 'Documento'"
+    (fechar)="fecharArquivo()">
+</app-visualizador-arquivo>

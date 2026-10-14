@@ -269,6 +269,24 @@ export class ApiService {
     return this.post<DocumentoApi>('/documentos', dto);
   }
 
+  /*
+   Arquivo do documento (imagem ou PDF).
+   O documento é cadastrado primeiro (dados) e depois o arquivo é enviado
+   para a API em formato multipart, no campo "arquivo".
+   */
+  enviarArquivoDocumento(id: number, arquivo: File): Promise<void> {
+    const formulario = new FormData();
+    formulario.append('arquivo', arquivo, arquivo.name);
+    return this.post<void>(`/documentos/${id}/arquivo`, formulario);
+  }
+
+  // Baixa o arquivo do documento para exibir na tela (admin ou o próprio cidadão)
+  baixarArquivoDocumento(id: number): Promise<Blob> {
+    return firstValueFrom(
+      this.http.get(this.url(`/documentos/${id}/arquivo`), { responseType: 'blob' })
+    );
+  }
+
   excluirDocumento(id: number): Promise<DocumentoApi> {
     return this.delete<DocumentoApi>(`/documentos/${id}`);
   }

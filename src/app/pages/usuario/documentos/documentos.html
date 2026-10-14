@@ -84,7 +84,10 @@
             <input
                 id="doc-arquivo"
                 type="file"
+                accept="image/jpeg,image/png,application/pdf"
                 (change)="selecionarArquivo($event)">
+
+            <small class="dica-arquivo">Imagem (JPG ou PNG) ou PDF, com até 5 MB.</small>
 
         </div>
 
@@ -140,7 +143,18 @@
 
                 <td>{{ doc.tipo }}</td>
 
-                <td>{{ doc.nomeArquivo }}</td>
+                <td>
+
+                    <button
+                        type="button"
+                        class="btn-ver"
+                        (click)="verArquivo(doc)">
+
+                        {{ doc.nomeArquivo }}
+
+                    </button>
+
+                </td>
 
                 <td>{{ doc.dataEnvio }}</td>
 
@@ -186,3 +200,9 @@
     </table>
 
 </div>
+
+<app-visualizador-arquivo
+    [idDocumento]="documentoAberto?.id ?? null"
+    [titulo]="documentoAberto ? documentoAberto.tipo + ' — ' + documentoAberto.nomeArquivo : 'Documento'"
+    (fechar)="fecharArquivo()">
+</app-visualizador-arquivo>

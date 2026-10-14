@@ -266,3 +266,22 @@ tr:hover{
     background:#fff3cd;
     color:#856404;
 }
+
+/* Nome do arquivo clicável: abre a visualização */
+.btn-ver{
+    background:none;
+    border:none;
+    padding:0;
+    color:#2F5233;
+    text-decoration:underline;
+    cursor:pointer;
+    font:inherit;
+    text-align:left;
+}
+
+.dica-arquivo{
+    display:block;
+    margin-top:6px;
+    color:#666;
+    font-size:13px;
+}

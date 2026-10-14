@@ -6,8 +6,10 @@ import { Processo, ProcessoService } from '../../../services/processo.service';
 import { StatusAlistamento, StatusDocumento } from '../../../shared/enums/perfil.enum';
 import { formatarData } from '../../../shared/utils/formatadores';
 import { mascararCpf } from '../../../shared/utils/validadores';
+import { VisualizadorArquivo } from '../../../shared/components/visualizador-arquivo/visualizador-arquivo';
 
 interface LinhaDocumento {
+  id: number;
   usuario: string;
   cpf: string;
   tipo: string;
@@ -21,7 +23,7 @@ interface LinhaDocumento {
 @Component({
   selector: 'app-documentos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, VisualizadorArquivo],
   templateUrl: './documentos.html',
   styleUrl: './documentos.css'
 })
@@ -34,6 +36,9 @@ export class Documentos implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   documentos: LinhaDocumento[] = [];
+
+  // Documento aberto na janela de visualização do arquivo
+  documentoAberto: LinhaDocumento | null = null;
 
   erro = '';
 
@@ -56,6 +61,7 @@ export class Documentos implements OnInit {
         processo.documentos.forEach(documento => {
 
           this.documentos.push({
+            id: documento.id,
             usuario: processo.usuario.nome,
             cpf: processo.usuario.cpf,
             tipo: documento.tipoDocumentoResponseDTO?.nomeTipo ?? '-',
@@ -82,6 +88,14 @@ export class Documentos implements OnInit {
 
     }
 
+  }
+
+  verArquivo(documento: LinhaDocumento): void {
+    this.documentoAberto = documento;
+  }
+
+  fecharArquivo(): void {
+    this.documentoAberto = null;
   }
 
   async alterarStatus(documento: LinhaDocumento, status: string): Promise<void> {

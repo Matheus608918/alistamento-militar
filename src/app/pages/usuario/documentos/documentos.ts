@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthService } from '../../../services/auth';
 import { ApiService, mensagemErro } from '../../../services/api.service';
@@ -8,13 +9,19 @@ import { DocumentoView, Processo, ProcessoService } from '../../../services/proc
 import { TipoDocumentoApi } from '../../../models/api.models';
 import { StatusAlistamento } from '../../../shared/enums/perfil.enum';
 import { agoraIso, hojeIso, vazioParaNull } from '../../../shared/utils/formatadores';
+import { VisualizadorArquivo } from '../../../shared/components/visualizador-arquivo/visualizador-arquivo';
+
+// Arquivos aceitos: imagem (JPG ou PNG) ou PDF, com até 5 MB
+const TIPOS_ACEITOS = ['image/jpeg', 'image/png', 'application/pdf'];
+const TAMANHO_MAXIMO = 5 * 1024 * 1024;
 
 @Component({
   selector: 'app-documentos',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    VisualizadorArquivo
   ],
   templateUrl: './documentos.html',
   styleUrl: './documentos.css'
@@ -50,6 +57,9 @@ export class Documentos implements OnInit {
   estadoEmissao = '';
 
   arquivoSelecionado: File | null = null;
+
+  // Documento aberto na janela de visualização
+  documentoAberto: DocumentoView | null = null;
 
   async ngOnInit(): Promise<void> {
     await this.carregar();
@@ -94,10 +104,34 @@ export class Documentos implements OnInit {
 
     const input = event.target as HTMLInputElement;
 
-    this.arquivoSelecionado = input.files && input.files.length > 0
+    const arquivo = input.files && input.files.length > 0
       ? input.files[0]
       : null;
 
+    if (arquivo && !TIPOS_ACEITOS.includes(arquivo.type)) {
+      alert('Envie uma imagem (JPG ou PNG) ou um PDF.');
+      input.value = '';
+      this.arquivoSelecionado = null;
+      return;
+    }
+
+    if (arquivo && arquivo.size > TAMANHO_MAXIMO) {
+      alert('O arquivo deve ter no máximo 5 MB.');
+      input.value = '';
+      this.arquivoSelecionado = null;
+      return;
+    }
+
+    this.arquivoSelecionado = arquivo;
+
+  }
+
+  verArquivo(documento: DocumentoView): void {
+    this.documentoAberto = documento;
+  }
+
+  fecharArquivo(): void {
+    this.documentoAberto = null;
   }
 
   async enviarDocumento(): Promise<void> {
@@ -135,7 +169,7 @@ export class Documentos implements OnInit {
 
     try {
 
-      await this.api.cadastrarDocumento({
+      const documento = await this.api.cadastrarDocumento({
         numeroDocumento: this.numeroDocumento.trim(),
         numeroFolha: vazioParaNull(this.numeroFolha),
         numeroLivro: vazioParaNull(this.numeroLivro),
@@ -149,6 +183,27 @@ export class Documentos implements OnInit {
         idAlistamento: processo.alistamento.id,
         idTipoDocumento: this.tipoDocumento
       });
+
+      // Depois de gravar os dados, envia o arquivo (imagem ou PDF)
+      try {
+
+        await this.api.enviarArquivoDocumento(documento.id, this.arquivoSelecionado);
+
+      } catch (erroArquivo) {
+
+        const rotaInexistente =
+          erroArquivo instanceof HttpErrorResponse && [404, 405].includes(erroArquivo.status);
+
+        if (!rotaInexistente) {
+          // Sem o arquivo o documento não serve para análise: desfaz o cadastro
+          await this.api.excluirDocumento(documento.id).catch(() => undefined);
+          throw erroArquivo;
+        }
+
+        // A API ainda não recebe arquivos: os dados ficam gravados mesmo assim
+        alert('Os dados do documento foram salvos, mas o servidor ainda não aceita o envio do arquivo.');
+
+      }
 
       if (
         processo.status === StatusAlistamento.AGUARDANDO_DOCUMENTOS ||
